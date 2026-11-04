@@ -1,0 +1,142 @@
+@import url("https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Noto+Nastaliq+Urdu:wght@400;600;700&display=swap");
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --royal: #590ec5;
+  --gold: #f5b301;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  @apply bg-[#faf7ff] text-ink antialiased;
+  font-feature-settings: "cv11", "ss01";
+}
+
+::selection {
+  background: #ffc93c;
+  color: #2c046e;
+}
+
+.font-urdu {
+  font-family: "Noto Nastaliq Urdu", "Jameel Noori Nastaleeq", serif;
+  line-height: 2.1;
+}
+
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+.no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+@layer components {
+  .btn {
+    @apply inline-flex select-none items-center justify-center gap-2 rounded-full text-sm font-bold transition-all duration-200 focus:outline-none focus-visible:ring-4 focus-visible:ring-royal-300/50 disabled:pointer-events-none disabled:opacity-50;
+  }
+  .btn-primary {
+    @apply btn bg-royal-700 text-white shadow-glow hover:bg-royal-800 active:scale-[0.98];
+  }
+  .btn-gold {
+    @apply btn bg-gold-300 text-royal-950 shadow-gold hover:bg-gold-400 active:scale-[0.98];
+  }
+  .btn-ghost {
+    @apply btn border border-royal-100 bg-white text-royal-800 hover:border-royal-300 hover:bg-royal-50;
+  }
+  .btn-soft {
+    @apply btn bg-royal-50 text-royal-800 hover:bg-royal-100;
+  }
+  .btn-danger {
+    @apply btn bg-rose-50 text-rose-700 hover:bg-rose-100;
+  }
+  .card {
+    @apply rounded-3xl border border-royal-100/70 bg-white shadow-card;
+  }
+  .input {
+    @apply w-full rounded-2xl border border-royal-100 bg-white px-4 py-3 text-sm text-ink transition placeholder:text-ink-muted/70 focus:border-royal-400 focus:outline-none focus:ring-4 focus:ring-royal-200/60;
+  }
+  .label {
+    @apply mb-1.5 block text-xs font-bold uppercase tracking-wide text-ink-soft;
+  }
+  .chip {
+    @apply inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-xs font-bold;
+  }
+  .link {
+    @apply font-semibold text-royal-700 underline-offset-4 transition hover:text-royal-900 hover:underline;
+  }
+  .skeleton {
+    @apply animate-pulse rounded-2xl bg-royal-100/60;
+  }
+}
+
+.bg-mesh {
+  background-image:
+    radial-gradient(at 8% 0%, rgba(124, 34, 255, 0.14) 0px, transparent 50%),
+    radial-gradient(at 95% 4%, rgba(255, 201, 60, 0.18) 0px, transparent 45%),
+    radial-gradient(at 50% 100%, rgba(124, 34, 255, 0.08) 0px, transparent 55%);
+}
+
+.bg-dots {
+  background-image: radial-gradient(rgba(89, 14, 197, 0.16) 1px, transparent 1px);
+  background-size: 22px 22px;
+}
+
+.text-balance {
+  text-wrap: balance;
+}
+
+[dir="rtl"] .flip-rtl {
+  transform: scaleX(-1);
+}
+
+@keyframes drawer-in {
+  from {
+    transform: translateX(100%);
+  }
+  to {
+    transform: translateX(0);
+  }
+}
+.animate-drawer {
+  animation: drawer-in 0.32s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+@keyframes pop-in {
+  0% {
+    opacity: 0;
+    transform: translateY(16px) scale(0.97);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+.animate-pop {
+  animation: pop-in 0.32s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+@keyframes toast-in {
+  0% {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+.animate-toast {
+  animation: toast-in 0.25s ease-out both;
+}
+
+@media print {
+  .no-print {
+    display: none !important;
+  }
+}
