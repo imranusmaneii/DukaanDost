@@ -21,6 +21,7 @@ import {
   cn,
   formatMoney,
 } from "@/lib/utils";
+import { ImageUpload } from "@/components/ImageUpload";
 import {
   EmptyState,
   Modal,
@@ -34,6 +35,7 @@ interface Draft {
   description: string;
   emoji: string;
   theme: string;
+  imageUrl: string | null;
   inStock: boolean;
   stock: string;
 }
@@ -44,6 +46,7 @@ const EMPTY_DRAFT: Draft = {
   description: "",
   emoji: "🎂",
   theme: "rose",
+  imageUrl: null,
   inStock: true,
   stock: "10",
 };
@@ -61,6 +64,7 @@ export default function ProductsPage() {
   const [editing, setEditing] = useState<Product | null>(null);
   const [draft, setDraft] = useState<Draft>(EMPTY_DRAFT);
   const [error, setError] = useState("");
+  const [busy, setBusy] = useState(false);
   const [toDelete, setToDelete] = useState<Product | null>(null);
   const [query, setQuery] = useState("");
   const { show, node } = useToast();
@@ -93,6 +97,7 @@ export default function ProductsPage() {
       description: product.description,
       emoji: product.emoji,
       theme: product.theme,
+      imageUrl: product.imageUrl ?? null,
       inStock: product.inStock,
       stock: String(product.stock),
     });
@@ -100,7 +105,7 @@ export default function ProductsPage() {
     setOpen(true);
   }
 
-  function save() {
+  async function save() {
     const price = Number(draft.price);
     if (!draft.name.trim() || !Number.isFinite(price) || price <= 0) {
       setError(t("products.required"));
@@ -112,17 +117,27 @@ export default function ProductsPage() {
       description: draft.description.trim(),
       emoji: draft.emoji,
       theme: draft.theme,
+      imageUrl: draft.imageUrl,
       inStock: draft.inStock,
       stock: Math.max(0, Number(draft.stock) || 0),
     };
-    if (editing) {
-      updateProduct(editing.id, payload);
-      show(t("common.save"));
-    } else {
-      addProduct(payload);
-      show(t("products.add"));
+    setBusy(true);
+    try {
+      if (editing) {
+        await updateProduct(editing.id, payload);
+        show(t("common.save"));
+      } else {
+        await addProduct(payload);
+        show(t("products.add"));
+      }
+      setOpen(false);
+    } catch (cause) {
+      setError(
+        cause instanceof Error ? cause.message : "Could not save product.",
+      );
+    } finally {
+      setBusy(false);
     }
-    setOpen(false);
   }
 
   if (!hydrated) return null;
@@ -225,9 +240,17 @@ export default function ProductsPage() {
                     PRODUCT_THEMES.royal.tile,
                 )}
               >
-                <span className="text-5xl drop-shadow-md transition group-hover:scale-110">
-                  {product.emoji}
-                </span>
+                {product.imageUrl ? (
+                  <img
+                    src={product.imageUrl}
+                    alt={product.name}
+                    className="absolute inset-0 h-full w-full object-cover transition duration-300 group-hover:scale-105"
+                  />
+                ) : (
+                  <span className="text-5xl drop-shadow-md transition group-hover:scale-110">
+                    {product.emoji}
+                  </span>
+                )}
                 <span
                   className={cn(
                     "absolute left-3 top-3 rounded-full px-2.5 py-1 text-[10px] font-extrabold",
@@ -323,10 +346,11 @@ export default function ProductsPage() {
             </button>
             <button
               type="button"
-              onClick={save}
-              className="btn-primary flex-1 px-4 py-3"
+              onClick={() => void save()}
+              disabled={busy}
+              className="btn-primary flex-1 px-4 py-3 disabled:opacity-60"
             >
-              {t("products.saveProduct")}
+              {busy ? "Saving…" : t("products.saveProduct")}
             </button>
           </div>
         }
@@ -335,12 +359,20 @@ export default function ProductsPage() {
           <div className="flex items-center gap-3 rounded-2xl border border-royal-100 bg-royal-50/40 p-3">
             <span
               className={cn(
-                "grid h-16 w-16 shrink-0 place-items-center rounded-2xl text-3xl",
+                "relative grid h-16 w-16 shrink-0 place-items-center overflow-hidden rounded-2xl text-3xl",
                 PRODUCT_THEMES[draft.theme]?.tile ??
                   PRODUCT_THEMES.royal.tile,
               )}
             >
-              {draft.emoji}
+              {draft.imageUrl ? (
+                <img
+                  src={draft.imageUrl}
+                  alt=""
+                  className="absolute inset-0 h-full w-full object-cover"
+                />
+              ) : (
+                draft.emoji
+              )}
             </span>
             <div className="min-w-0">
               <p className="truncate text-sm font-extrabold text-ink">
@@ -425,6 +457,16 @@ export default function ProductsPage() {
               className="input resize-none"
             />
           </div>
+
+          <ImageUpload
+            value={draft.imageUrl}
+            onChange={(url) => setDraft((prev) => ({ ...prev, imageUrl: url }))}
+            folder="products"
+            label="Product photo"
+            hint="Optional. A real photo helps customers decide faster."
+            aspect="product"
+            fallback={<span className="text-2xl">{draft.emoji}</span>}
+          />
 
           <div>
             <p className="label">{t("products.emoji")}</p>

@@ -2,56 +2,99 @@
 
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import {
   ArrowLeft,
   ArrowRight,
+  Banknote,
   Check,
   ChevronRight,
+  CreditCard,
   Link2,
   MessageCircle,
   Package,
   Plus,
+  Smartphone,
   Sparkles,
   Store,
   Trash2,
-  Upload,
+  Truck,
 } from "lucide-react";
+import { useAuth } from "@/lib/auth";
 import { useStore } from "@/lib/store";
-import type { Product } from "@/lib/types";
+import type { Lang, PaymentMethod, Product } from "@/lib/types";
 import {
   EMOJI_CHOICES,
+  PAYMENT_LABELS,
   PRODUCT_THEMES,
   THEME_KEYS,
   cn,
   formatMoney,
   slugify,
-  uid,
 } from "@/lib/utils";
+import { ImageUpload } from "@/components/ImageUpload";
 import { Logo, ShopAvatar } from "@/components/ui";
 
-const STEPS = ["Shop details", "First products", "Publish"];
+const STEPS = ["Shop details", "Products", "Payments", "Publish"];
+
+const PAYMENT_OPTIONS: Array<{ id: PaymentMethod; icon: typeof Truck }> = [
+  { id: "cod", icon: Truck },
+  { id: "easypaisa", icon: Smartphone },
+  { id: "jazzcash", icon: Smartphone },
+  { id: "bank", icon: Banknote },
+];
 
 export default function OnboardingPage() {
   const router = useRouter();
-  const { updateShop, addProduct, hydrated, lang } = useStore();
+  const { profile, user } = useAuth();
+  const { createShop, addProduct, hasShop, hydrated, lang, setLang } =
+    useStore();
   const [step, setStep] = useState(0);
   const [error, setError] = useState("");
+  const [busy, setBusy] = useState(false);
   const [shopForm, setShopForm] = useState({
     name: "",
     ownerName: "",
     whatsappNumber: "",
     tagline: "",
     description: "",
-    logoEmoji: "🎂",
-    logoColor: "rose",
+    logoEmoji: "🏪",
+    logoColor: "royal",
+    logoUrl: null as string | null,
+  });
+  const [fulfillment, setFulfillment] = useState({
+    deliveryNote: "",
+    isOpen: true,
+  });
+  const [paymentForm, setPaymentForm] = useState<{
+    methods: PaymentMethod[];
+    accounts: { easypaisa: string; jazzcash: string; bank: string };
+  }>({
+    methods: ["cod"],
+    accounts: { easypaisa: "", jazzcash: "", bank: "" },
   });
   const [draftProduct, setDraftProduct] = useState({
     name: "",
     price: "",
+    stock: "10",
+    description: "",
     emoji: "🍰",
+    theme: "royal",
+    imageUrl: null as string | null,
   });
   const [newProducts, setNewProducts] = useState<Product[]>([]);
+
+  useEffect(() => {
+    if (profile?.fullName) {
+      setShopForm((prev) =>
+        prev.ownerName ? prev : { ...prev, ownerName: profile.fullName },
+      );
+    }
+  }, [profile?.fullName]);
+
+  useEffect(() => {
+    if (hydrated && hasShop) router.replace("/dashboard");
+  }, [hydrated, hasShop, router]);
 
   const previewSlug = useMemo(
     () => slugify(shopForm.name) || "your-shop",
@@ -64,18 +107,49 @@ export default function OnboardingPage() {
         setError("Please add your shop name and WhatsApp number.");
         return;
       }
-      setError("");
-      setStep(1);
+      if (shopForm.whatsappNumber.replace(/\D/g, "").length < 10) {
+        setError("Add a valid WhatsApp number with at least 10 digits.");
+        return;
+      }
+    }
+    if (step === 1 && newProducts.length === 0) {
+      setError("Add at least one product so customers have something to buy.");
       return;
     }
-    if (step === 1) {
-      setError("");
-      setStep(2);
+    if (step === 2) {
+      if (paymentForm.methods.length === 0) {
+        setError("Choose at least one payment method.");
+        return;
+      }
+      if (
+        paymentForm.methods.includes("easypaisa") &&
+        !paymentForm.accounts.easypaisa.trim()
+      ) {
+        setError("Add your Easypaisa number, or turn that method off.");
+        return;
+      }
+      if (
+        paymentForm.methods.includes("jazzcash") &&
+        !paymentForm.accounts.jazzcash.trim()
+      ) {
+        setError("Add your JazzCash number, or turn that method off.");
+        return;
+      }
+      if (
+        paymentForm.methods.includes("bank") &&
+        !paymentForm.accounts.bank.trim()
+      ) {
+        setError("Add your bank account or IBAN, or turn that method off.");
+        return;
+      }
     }
+    setError("");
+    setStep((prev) => Math.min(STEPS.length - 1, prev + 1));
   }
 
   function addDraftProduct() {
     const price = Number(draftProduct.price);
+    const stock = Math.max(0, Number(draftProduct.stock) || 0);
     if (!draftProduct.name.trim() || !Number.isFinite(price) || price <= 0) {
       setError("Add a product name and a price above 0.");
       return;
@@ -83,38 +157,92 @@ export default function OnboardingPage() {
     setNewProducts((prev) => [
       ...prev,
       {
-        id: uid("p"),
+        id: `draft-${Date.now()}-${prev.length}`,
         name: draftProduct.name.trim(),
         price,
-        description: "",
+        description: draftProduct.description.trim(),
         emoji: draftProduct.emoji,
-        theme: shopForm.logoColor,
-        inStock: true,
-        stock: 10,
+        theme: draftProduct.theme,
+        imageUrl: draftProduct.imageUrl,
+        inStock: stock > 0,
+        stock,
       },
     ]);
-    setDraftProduct({ name: "", price: "", emoji: "🍰" });
+    setDraftProduct({
+      name: "",
+      price: "",
+      stock: "10",
+      description: "",
+      emoji: "🍰",
+      theme: shopForm.logoColor,
+      imageUrl: null,
+    });
     setError("");
   }
 
-  function publish() {
-    updateShop({
-      name: shopForm.name.trim(),
-      ownerName: shopForm.ownerName.trim() || "Shop owner",
-      whatsappNumber: shopForm.whatsappNumber.trim(),
-      tagline:
-        shopForm.tagline.trim() || "Fresh orders, made with love",
-      description: shopForm.description.trim(),
-      logoEmoji: shopForm.logoEmoji,
-      logoColor: shopForm.logoColor,
-      slug: previewSlug,
-      language: lang,
+  function toggleMethod(method: PaymentMethod) {
+    setPaymentForm((prev) => {
+      const has = prev.methods.includes(method);
+      if (has && prev.methods.length === 1) return prev;
+      return {
+        ...prev,
+        methods: has
+          ? prev.methods.filter((item) => item !== method)
+          : [...prev.methods, method],
+      };
     });
-    newProducts.forEach((product) => addProduct(product));
-    router.push("/dashboard");
+  }
+
+  async function publish() {
+    if (!user) {
+      setError("Please sign in first.");
+      return;
+    }
+    setBusy(true);
+    setError("");
+    try {
+      const shop = await createShop({
+        name: shopForm.name.trim(),
+        ownerName: shopForm.ownerName.trim() || profile?.fullName || "",
+        whatsappNumber: shopForm.whatsappNumber.trim(),
+        tagline: shopForm.tagline.trim(),
+        description: shopForm.description.trim(),
+        logoEmoji: shopForm.logoEmoji,
+        logoColor: shopForm.logoColor,
+        logoUrl: shopForm.logoUrl,
+        isOpen: fulfillment.isOpen,
+        slug: previewSlug,
+        paymentMethods: paymentForm.methods,
+        paymentAccounts: paymentForm.accounts,
+        deliveryNote: fulfillment.deliveryNote.trim(),
+        language: lang,
+      });
+      for (const product of newProducts) {
+        await addProduct({
+          name: product.name,
+          price: product.price,
+          description: product.description,
+          emoji: product.emoji,
+          theme: product.theme,
+          imageUrl: product.imageUrl,
+          inStock: product.inStock,
+          stock: product.stock,
+        });
+      }
+      router.push(`/dashboard`);
+      router.refresh();
+      void shop;
+    } catch (cause) {
+      setError(
+        cause instanceof Error ? cause.message : "Could not create your shop.",
+      );
+    } finally {
+      setBusy(false);
+    }
   }
 
   if (!hydrated) return null;
+  if (hasShop) return null;
 
   return (
     <div className="min-h-screen bg-mesh">
@@ -123,13 +251,33 @@ export default function OnboardingPage() {
           <Link href="/">
             <Logo />
           </Link>
-          <Link
-            href="/dashboard"
-            className="flex items-center gap-1 text-xs font-extrabold text-royal-700 hover:underline"
-          >
-            Already have a shop
-            <ChevronRight className="h-3.5 w-3.5 flip-rtl" />
-          </Link>
+          <div className="flex items-center gap-3">
+            <div className="hidden items-center rounded-full border border-royal-100 bg-white p-1 sm:flex">
+              {(["en", "ur"] as Lang[]).map((value) => (
+                <button
+                  key={value}
+                  type="button"
+                  onClick={() => setLang(value)}
+                  className={cn(
+                    "rounded-full px-2.5 py-1 text-[11px] font-extrabold transition",
+                    lang === value
+                      ? "bg-royal-700 text-white"
+                      : "text-ink-muted",
+                    value === "ur" && "font-urdu",
+                  )}
+                >
+                  {value === "en" ? "EN" : "اردو"}
+                </button>
+              ))}
+            </div>
+            <Link
+              href="/dashboard"
+              className="flex items-center gap-1 text-xs font-extrabold text-royal-700 hover:underline"
+            >
+              Dashboard
+              <ChevronRight className="h-3.5 w-3.5 flip-rtl" />
+            </Link>
+          </div>
         </div>
       </header>
 
@@ -143,12 +291,12 @@ export default function OnboardingPage() {
             Let’s open your <span className="text-royal-700">dukaan</span>
           </h1>
           <p className="mt-2 text-sm text-ink-muted">
-            Add your shop details, list a few products, and share one link.
-            No website, no tech skills, no fees.
+            Add your shop details, list your real products, and choose where you
+            want to receive payments.
           </p>
         </div>
 
-        <div className="mx-auto mt-7 flex max-w-2xl items-center gap-2">
+        <div className="mx-auto mt-7 flex max-w-3xl items-center gap-2">
           {STEPS.map((label, index) => (
             <div key={label} className="flex flex-1 items-center gap-2">
               <div className="flex flex-1 flex-col gap-1.5">
@@ -183,6 +331,20 @@ export default function OnboardingPage() {
                     This is what customers will see on your link.
                   </p>
                 </div>
+
+                <ImageUpload
+                  value={shopForm.logoUrl}
+                  onChange={(url) =>
+                    setShopForm((prev) => ({ ...prev, logoUrl: url }))
+                  }
+                  folder="shop"
+                  label="Shop logo or photo"
+                  hint="A square photo works best. You can change it later."
+                  fallback={
+                    <span className="text-3xl">{shopForm.logoEmoji}</span>
+                  }
+                />
+
                 <div className="grid gap-4 sm:grid-cols-2">
                   <div>
                     <label className="label" htmlFor="onb-name">
@@ -278,7 +440,7 @@ export default function OnboardingPage() {
                 </div>
 
                 <div>
-                  <p className="label">Shop icon</p>
+                  <p className="label">Shop icon (if no photo)</p>
                   <div className="flex flex-wrap gap-1.5">
                     {EMOJI_CHOICES.map((emoji) => (
                       <button
@@ -317,7 +479,7 @@ export default function OnboardingPage() {
                           }))
                         }
                         className={cn(
-                          "h-9 w-9 rounded-xl ring-offset-2 transition",
+                          "grid h-9 w-9 place-items-center rounded-xl ring-offset-2 transition",
                           PRODUCT_THEMES[theme].tile,
                           shopForm.logoColor === theme
                             ? "ring-2 ring-royal-600"
@@ -325,7 +487,7 @@ export default function OnboardingPage() {
                         )}
                       >
                         {shopForm.logoColor === theme && (
-                          <Check className="mx-auto h-4 w-4 text-white drop-shadow" />
+                          <Check className="h-4 w-4 text-white drop-shadow" />
                         )}
                       </button>
                     ))}
@@ -338,15 +500,16 @@ export default function OnboardingPage() {
               <div className="space-y-4">
                 <div>
                   <h2 className="text-lg font-extrabold text-ink">
-                    Add your first products
+                    Add your real products
                   </h2>
                   <p className="text-xs text-ink-muted">
-                    You can always add more later. Prices are in rupees.
+                    Your shop starts empty. Add what you actually sell — prices
+                    are in rupees.
                   </p>
                 </div>
 
                 <div className="rounded-2xl border border-royal-100 bg-royal-50/40 p-3.5">
-                  <div className="grid gap-2 sm:grid-cols-[1fr_120px]">
+                  <div className="grid gap-2 sm:grid-cols-[1fr_110px_90px]">
                     <input
                       value={draftProduct.name}
                       onChange={(event) =>
@@ -371,6 +534,50 @@ export default function OnboardingPage() {
                       min={0}
                       className="input"
                       dir="ltr"
+                    />
+                    <input
+                      value={draftProduct.stock}
+                      onChange={(event) =>
+                        setDraftProduct((prev) => ({
+                          ...prev,
+                          stock: event.target.value,
+                        }))
+                      }
+                      placeholder="Stock"
+                      type="number"
+                      min={0}
+                      className="input"
+                      dir="ltr"
+                    />
+                  </div>
+                  <textarea
+                    value={draftProduct.description}
+                    onChange={(event) =>
+                      setDraftProduct((prev) => ({
+                        ...prev,
+                        description: event.target.value,
+                      }))
+                    }
+                    rows={2}
+                    placeholder="Short description (optional)"
+                    className="input mt-2 resize-none"
+                  />
+                  <div className="mt-2">
+                    <ImageUpload
+                      value={draftProduct.imageUrl}
+                      onChange={(url) =>
+                        setDraftProduct((prev) => ({
+                          ...prev,
+                          imageUrl: url,
+                        }))
+                      }
+                      folder="products"
+                      label="Product photo"
+                      hint="Optional, but products with photos sell better."
+                      aspect="product"
+                      fallback={
+                        <span className="text-2xl">{draftProduct.emoji}</span>
+                      }
                     />
                   </div>
                   <div className="mt-2 flex flex-wrap items-center gap-1.5">
@@ -397,7 +604,7 @@ export default function OnboardingPage() {
                       className="btn-primary ml-auto px-3.5 py-2 text-xs"
                     >
                       <Plus className="h-3.5 w-3.5" />
-                      Add
+                      Add product
                     </button>
                   </div>
                 </div>
@@ -419,15 +626,11 @@ export default function OnboardingPage() {
                         key={product.id}
                         className="flex items-center gap-3 rounded-2xl border border-royal-100 p-2.5"
                       >
-                        <span
-                          className={cn(
-                            "grid h-10 w-10 place-items-center rounded-xl text-xl",
-                            PRODUCT_THEMES[product.theme]?.tile ??
-                              PRODUCT_THEMES.royal.tile,
-                          )}
-                        >
-                          {product.emoji}
-                        </span>
+                        <ShopAvatar
+                          emoji={product.emoji}
+                          theme={product.theme}
+                          imageUrl={product.imageUrl}
+                        />
                         <div className="min-w-0 flex-1">
                           <p className="truncate text-xs font-extrabold text-ink">
                             {product.name}
@@ -435,7 +638,8 @@ export default function OnboardingPage() {
                           <p className="text-[11px] font-bold text-royal-700">
                             <span dir="ltr">
                               {formatMoney(product.price)}
-                            </span>
+                            </span>{" "}
+                            · {product.stock} in stock
                           </p>
                         </div>
                         <button
@@ -453,16 +657,192 @@ export default function OnboardingPage() {
                     ))}
                   </ul>
                 )}
-
-                <div className="flex items-center gap-2 rounded-2xl bg-gold-50 px-3.5 py-3 text-[11px] font-semibold text-gold-800">
-                  <Upload className="h-4 w-4 shrink-0" />
-                  Photo upload and Urdu voice entry are coming soon. For now,
-                  pick an icon that fits.
-                </div>
               </div>
             )}
 
             {step === 2 && (
+              <div className="space-y-5">
+                <div>
+                  <h2 className="text-lg font-extrabold text-ink">
+                    Where should customers pay you?
+                  </h2>
+                  <p className="text-xs text-ink-muted">
+                    These are your own accounts. Customers will see them at
+                    checkout — we never keep your money.
+                  </p>
+                </div>
+
+                <div className="grid gap-2.5 sm:grid-cols-2">
+                  {PAYMENT_OPTIONS.map(({ id, icon: Icon }) => {
+                    const active = paymentForm.methods.includes(id);
+                    return (
+                      <button
+                        key={id}
+                        type="button"
+                        onClick={() => toggleMethod(id)}
+                        className={cn(
+                          "flex items-center gap-2.5 rounded-2xl border px-3.5 py-3 text-left transition rtl:text-right",
+                          active
+                            ? "border-royal-400 bg-royal-50"
+                            : "border-royal-100 hover:bg-royal-50/50",
+                        )}
+                      >
+                        <span
+                          className={cn(
+                            "grid h-8 w-8 place-items-center rounded-xl",
+                            active
+                              ? "bg-royal-700 text-white"
+                              : "bg-royal-50 text-royal-700",
+                          )}
+                        >
+                          <Icon className="h-4 w-4" />
+                        </span>
+                        <span className="flex-1 text-xs font-extrabold text-ink">
+                          {lang === "ur"
+                            ? PAYMENT_LABELS[id].ur
+                            : PAYMENT_LABELS[id].en}
+                        </span>
+                        <span
+                          className={cn(
+                            "grid h-5 w-5 place-items-center rounded-full border",
+                            active
+                              ? "border-royal-700 bg-royal-700 text-white"
+                              : "border-royal-200",
+                          )}
+                        >
+                          {active && <Check className="h-3 w-3" />}
+                        </span>
+                      </button>
+                    );
+                  })}
+                </div>
+
+                <div className="grid gap-3 sm:grid-cols-3">
+                  {paymentForm.methods.includes("easypaisa") && (
+                    <div>
+                      <label className="label" htmlFor="onb-easypaisa">
+                        Easypaisa number
+                      </label>
+                      <input
+                        id="onb-easypaisa"
+                        value={paymentForm.accounts.easypaisa}
+                        onChange={(event) =>
+                          setPaymentForm((prev) => ({
+                            ...prev,
+                            accounts: {
+                              ...prev.accounts,
+                              easypaisa: event.target.value,
+                            },
+                          }))
+                        }
+                        placeholder="03xx xxxxxxx"
+                        className="input"
+                        dir="ltr"
+                      />
+                    </div>
+                  )}
+                  {paymentForm.methods.includes("jazzcash") && (
+                    <div>
+                      <label className="label" htmlFor="onb-jazzcash">
+                        JazzCash number
+                      </label>
+                      <input
+                        id="onb-jazzcash"
+                        value={paymentForm.accounts.jazzcash}
+                        onChange={(event) =>
+                          setPaymentForm((prev) => ({
+                            ...prev,
+                            accounts: {
+                              ...prev.accounts,
+                              jazzcash: event.target.value,
+                            },
+                          }))
+                        }
+                        placeholder="03xx xxxxxxx"
+                        className="input"
+                        dir="ltr"
+                      />
+                    </div>
+                  )}
+                  {paymentForm.methods.includes("bank") && (
+                    <div>
+                      <label className="label" htmlFor="onb-bank">
+                        Bank / IBAN
+                      </label>
+                      <input
+                        id="onb-bank"
+                        value={paymentForm.accounts.bank}
+                        onChange={(event) =>
+                          setPaymentForm((prev) => ({
+                            ...prev,
+                            accounts: {
+                              ...prev.accounts,
+                              bank: event.target.value,
+                            },
+                          }))
+                        }
+                        placeholder="Bank name · IBAN"
+                        className="input"
+                        dir="ltr"
+                      />
+                    </div>
+                  )}
+                </div>
+
+                <div className="rounded-2xl border border-royal-100 p-4">
+                  <p className="flex items-center gap-2 text-xs font-extrabold text-ink">
+                    <CreditCard className="h-4 w-4 text-royal-700" />
+                    Delivery and store status
+                  </p>
+                  <textarea
+                    value={fulfillment.deliveryNote}
+                    onChange={(event) =>
+                      setFulfillment((prev) => ({
+                        ...prev,
+                        deliveryNote: event.target.value,
+                      }))
+                    }
+                    rows={2}
+                    placeholder="Delivery areas, timings, or pickup instructions."
+                    className="input mt-2 resize-none"
+                  />
+                  <button
+                    type="button"
+                    onClick={() =>
+                      setFulfillment((prev) => ({
+                        ...prev,
+                        isOpen: !prev.isOpen,
+                      }))
+                    }
+                    className="mt-3 flex w-full items-center justify-between rounded-2xl bg-royal-50/60 px-4 py-3"
+                  >
+                    <span className="text-left">
+                      <span className="block text-xs font-extrabold text-ink">
+                        Open for orders
+                      </span>
+                      <span className="block text-[11px] text-ink-muted">
+                        Turn this off anytime from your dashboard.
+                      </span>
+                    </span>
+                    <span
+                      className={cn(
+                        "relative h-6 w-11 rounded-full transition",
+                        fulfillment.isOpen ? "bg-emerald-500" : "bg-royal-200",
+                      )}
+                    >
+                      <span
+                        className={cn(
+                          "absolute top-0.5 h-5 w-5 rounded-full bg-white shadow transition",
+                          fulfillment.isOpen ? "left-[22px]" : "left-0.5",
+                        )}
+                      />
+                    </span>
+                  </button>
+                </div>
+              </div>
+            )}
+
+            {step === 3 && (
               <div className="space-y-4">
                 <div>
                   <h2 className="text-lg font-extrabold text-ink">
@@ -478,6 +858,7 @@ export default function OnboardingPage() {
                     <ShopAvatar
                       emoji={shopForm.logoEmoji}
                       theme={shopForm.logoColor}
+                      imageUrl={shopForm.logoUrl}
                       size="lg"
                     />
                     <div className="min-w-0">
@@ -489,7 +870,7 @@ export default function OnboardingPage() {
                       </p>
                       <p className="mt-1 flex items-center gap-1 text-[11px] font-bold text-royal-700">
                         <Link2 className="h-3 w-3" />
-                        dukaandost.app/shop/{previewSlug}
+                        /shop/{previewSlug}
                       </p>
                     </div>
                   </div>
@@ -503,9 +884,11 @@ export default function OnboardingPage() {
                       </p>
                     </div>
                     <div>
-                      <p className="text-lg font-extrabold text-ink">2</p>
+                      <p className="text-lg font-extrabold text-ink">
+                        {paymentForm.methods.length}
+                      </p>
                       <p className="text-[10px] font-bold uppercase text-ink-muted">
-                        min setup
+                        Pay methods
                       </p>
                     </div>
                     <div>
@@ -522,7 +905,7 @@ export default function OnboardingPage() {
                     "One shareable shop link",
                     "Orders saved with customer details",
                     "Payment status on every order",
-                    "Weekly earnings summary",
+                    "Your own payment accounts",
                     "WhatsApp confirmation in one tap",
                     "English and Urdu",
                   ].map((item) => (
@@ -571,7 +954,7 @@ export default function OnboardingPage() {
                 </button>
               )}
 
-              {step < 2 ? (
+              {step < STEPS.length - 1 ? (
                 <button
                   type="button"
                   onClick={next}
@@ -583,11 +966,12 @@ export default function OnboardingPage() {
               ) : (
                 <button
                   type="button"
-                  onClick={publish}
-                  className="btn-gold px-5 py-2.5"
+                  onClick={() => void publish()}
+                  disabled={busy}
+                  className="btn-gold px-5 py-2.5 disabled:opacity-60"
                 >
                   <Store className="h-4 w-4" />
-                  Publish my shop
+                  {busy ? "Publishing…" : "Publish my shop"}
                 </button>
               )}
             </div>
@@ -602,6 +986,7 @@ export default function OnboardingPage() {
                     <ShopAvatar
                       emoji={shopForm.logoEmoji}
                       theme={shopForm.logoColor}
+                      imageUrl={shopForm.logoUrl}
                       size="md"
                     />
                     <div className="min-w-0">
@@ -615,7 +1000,7 @@ export default function OnboardingPage() {
                   </div>
                   <div className="mt-3 flex gap-1.5">
                     <span className="rounded-full bg-white/15 px-2 py-0.5 text-[8px] font-bold">
-                      Open for orders
+                      {fulfillment.isOpen ? "Open for orders" : "Closed"}
                     </span>
                     <span className="rounded-full bg-white/15 px-2 py-0.5 text-[8px] font-bold">
                       WhatsApp
@@ -623,46 +1008,25 @@ export default function OnboardingPage() {
                   </div>
                 </div>
                 <div className="space-y-2 p-3">
-                  {(newProducts.length > 0
-                    ? newProducts
-                    : [
-                        {
-                          id: "preview1",
-                          name: "Chocolate Fudge Cake",
-                          price: 2500,
-                          emoji: "🍫",
-                          theme: shopForm.logoColor,
-                          description: "",
-                          inStock: true,
-                          stock: 10,
-                        },
-                        {
-                          id: "preview2",
-                          name: "Vanilla Cupcakes",
-                          price: 900,
-                          emoji: "🧁",
-                          theme: shopForm.logoColor,
-                          description: "",
-                          inStock: true,
-                          stock: 10,
-                        },
-                      ]
-                  )
-                    .slice(0, 3)
-                    .map((product) => (
+                  {newProducts.length === 0 ? (
+                    <div className="rounded-xl border border-dashed border-royal-200 px-3 py-6 text-center">
+                      <Package className="mx-auto h-5 w-5 text-royal-300" />
+                      <p className="mt-1 text-[9px] font-bold text-ink-muted">
+                        Your products will appear here
+                      </p>
+                    </div>
+                  ) : (
+                    newProducts.slice(0, 3).map((product) => (
                       <div
                         key={product.id}
                         className="flex items-center gap-2 rounded-xl border border-royal-100 bg-white p-1.5"
                       >
-                        <span
-                          className={cn(
-                            "grid h-9 w-9 place-items-center rounded-lg text-base",
-                            PRODUCT_THEMES[product.theme]?.tile ??
-                              PRODUCT_THEMES.royal.tile,
-                          )}
-                        >
-                          {product.emoji}
-                        </span>
+                        <ShopAvatar
+                          emoji={product.emoji}
+                          theme={product.theme}
+                          imageUrl={product.imageUrl}
+                          size="sm"
+                        />
                         <div className="min-w-0 flex-1">
                           <p className="truncate text-[9px] font-extrabold text-ink">
                             {product.name}
@@ -675,12 +1039,13 @@ export default function OnboardingPage() {
                           +
                         </span>
                       </div>
-                    ))}
+                    ))
+                  )}
                   <div className="flex items-center justify-between rounded-xl bg-royal-800 px-2.5 py-2 text-white">
                     <span className="text-[8px] font-bold">View cart</span>
                     <span className="text-[8px] font-bold">
                       {formatMoney(
-                        (newProducts.length > 0 ? newProducts : [{ price: 2500 }])
+                        newProducts
                           .slice(0, 1)
                           .reduce((sum, item) => sum + item.price, 0),
                       )}
@@ -698,17 +1063,9 @@ export default function OnboardingPage() {
           </div>
         </div>
 
-        <div className="mx-auto mt-6 flex max-w-2xl flex-col items-center justify-between gap-2 text-[11px] font-semibold text-ink-muted sm:flex-row">
-          <span>
-            Demo tip: your changes are saved in this browser only.
-          </span>
-          <button
-            type="button"
-            onClick={() => router.push("/dashboard")}
-            className="font-extrabold text-royal-700 hover:underline"
-          >
-            Skip and explore the demo shop
-          </button>
+        <div className="mx-auto mt-6 max-w-2xl text-center text-[11px] font-semibold text-ink-muted">
+          Your shop starts empty. Orders, earnings and customers only appear
+          when they are real.
         </div>
       </main>
     </div>

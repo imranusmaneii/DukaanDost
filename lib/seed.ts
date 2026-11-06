@@ -9,6 +9,8 @@ import type {
 } from "./types";
 
 export const seedShop: Shop = {
+  id: "seed-shop",
+  ownerId: "seed-owner",
   name: "Ayesha Bakes",
   slug: "ayesha-bakes",
   ownerName: "Ayesha Khan",
@@ -24,7 +26,11 @@ export const seedShop: Shop = {
     jazzcash: "0312 3456789",
     bank: "Meezan Bank · PK36MEZN0001234567890123",
   },
+  logoUrl: null,
+  isOpen: true,
+  deliveryNote: "Delivery across Karachi. Free over Rs 3,000.",
   language: "en",
+  createdAt: new Date("2025-01-01T00:00:00.000Z").toISOString(),
 };
 
 export const seedProducts: Product[] = [

@@ -8,6 +8,7 @@ const en: Dict = {
   "nav.products": "Products",
   "nav.payments": "Payments",
   "nav.settings": "Settings",
+  "nav.admin": "Admin",
   "nav.storefront": "My storefront",
 
   "common.viewShop": "View shop",

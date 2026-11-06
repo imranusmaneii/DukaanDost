@@ -117,7 +117,7 @@ export default function DashboardPage() {
   const buckets = useMemo(() => weekBuckets(orders), [orders]);
   const maxBucket = Math.max(...buckets.map((bucket) => bucket.total), 1);
   const recentOrders = orders.slice(0, 5);
-  const firstName = shop.ownerName.split(" ")[0];
+  const firstName = shop.ownerName.split(" ")[0] || "there";
   const weekRange = `${startOfWeek().toLocaleDateString("en-PK", {
     day: "numeric",
     month: "short",
@@ -167,6 +167,7 @@ export default function DashboardPage() {
             <ShopAvatar
               emoji={shop.logoEmoji}
               theme={shop.logoColor}
+              imageUrl={shop.logoUrl}
               size="lg"
             />
             <div>
@@ -346,6 +347,7 @@ export default function DashboardPage() {
                   <ShopAvatar
                     emoji={stats.bestProduct.emoji}
                     theme={stats.bestProduct.theme}
+                    imageUrl={stats.bestProduct.imageUrl}
                     size="lg"
                   />
                   <div className="min-w-0">

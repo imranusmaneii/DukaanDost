@@ -24,8 +24,9 @@ import {
   User,
   Wallet,
 } from "lucide-react";
-import { useStore } from "@/lib/store";
-import type { Order, PaymentMethod } from "@/lib/types";
+import { getProducts, getShopBySlug, placeOrder } from "@/lib/data";
+import { makeT } from "@/lib/i18n";
+import type { Lang, Order, PaymentMethod, Product, Shop } from "@/lib/types";
 import {
   PAYMENT_LABELS,
   cn,
@@ -36,58 +37,92 @@ import {
 import {
   AppLoader,
   Drawer,
-  LangToggle,
   Logo,
   Modal,
   ShopAvatar,
 } from "@/components/ui";
 
+interface CartLine {
+  productId: string;
+  qty: number;
+}
+
 export default function StorefrontPage() {
   const params = useParams<{ slug: string }>();
   const slug = typeof params?.slug === "string" ? params.slug : "";
-  const {
-    shop,
-    products,
-    orders,
-    cart,
-    lang,
-    t,
-    hydrated,
-    addToCart,
-    setQty,
-    removeFromCart,
-    placeOrder,
-  } = useStore();
-
+  const [shop, setShop] = useState<Shop | null>(null);
+  const [products, setProducts] = useState<Product[]>([]);
+  const [status, setStatus] = useState<"loading" | "ready" | "missing" | "error">(
+    "loading",
+  );
+  const [loadError, setLoadError] = useState("");
+  const [lang, setLang] = useState<Lang>("en");
+  const [cart, setCart] = useState<CartLine[]>([]);
   const [cartOpen, setCartOpen] = useState(false);
   const [checkout, setCheckout] = useState(false);
   const [query, setQuery] = useState("");
   const [addedId, setAddedId] = useState<string | null>(null);
   const [success, setSuccess] = useState<Order | null>(null);
   const [error, setError] = useState("");
+  const [placing, setPlacing] = useState(false);
   const [form, setForm] = useState({
     name: "",
     phone: "",
     address: "",
     note: "",
   });
-  const [method, setMethod] = useState<PaymentMethod>(
-    shop.paymentMethods[0] ?? "cod",
-  );
+  const [method, setMethod] = useState<PaymentMethod>("cod");
+
+  const t = useMemo(() => makeT(lang), [lang]);
 
   useEffect(() => {
-    setMethod((current) =>
-      shop.paymentMethods.includes(current)
-        ? current
-        : (shop.paymentMethods[0] ?? "cod"),
-    );
-  }, [shop.paymentMethods]);
+    let active = true;
+    async function load() {
+      if (!slug) {
+        setStatus("missing");
+        return;
+      }
+      setStatus("loading");
+      setLoadError("");
+      try {
+        const nextShop = await getShopBySlug(slug);
+        if (!active) return;
+        if (!nextShop) {
+          setStatus("missing");
+          return;
+        }
+        const nextProducts = await getProducts(nextShop.id);
+        if (!active) return;
+        setShop(nextShop);
+        setProducts(nextProducts);
+        setLang(nextShop.language === "ur" ? "ur" : "en");
+        setMethod(nextShop.paymentMethods[0] ?? "cod");
+        setStatus("ready");
+      } catch (cause) {
+        if (!active) return;
+        setLoadError(
+          cause instanceof Error ? cause.message : "Could not load this shop.",
+        );
+        setStatus("error");
+      }
+    }
+    void load();
+    return () => {
+      active = false;
+    };
+  }, [slug]);
+
+  useEffect(() => {
+    if (!shop) return;
+    document.documentElement.lang = lang;
+    document.documentElement.dir = lang === "ur" ? "rtl" : "ltr";
+  }, [lang, shop]);
 
   const cartLines = useMemo(
     () =>
       cart
         .map((line) => {
-          const product = products.find((p) => p.id === line.productId);
+          const product = products.find((item) => item.id === line.productId);
           return product ? { product, qty: line.qty } : null;
         })
         .filter((line): line is NonNullable<typeof line> => Boolean(line)),
@@ -109,44 +144,102 @@ export default function StorefrontPage() {
     );
   });
 
-  const deliveredCount = orders.filter(
-    (order) => order.orderStatus === "delivered",
-  ).length;
+  function add(productId: string) {
+    if (!shop?.isOpen) return;
+    const product = products.find((item) => item.id === productId);
+    if (!product || !product.inStock) return;
+    setCart((prev) => {
+      const existing = prev.find((line) => line.productId === productId);
+      if (existing) {
+        return prev.map((line) =>
+          line.productId === productId
+            ? { ...line, qty: Math.min(product.stock, line.qty + 1) }
+            : line,
+        );
+      }
+      return [...prev, { productId, qty: 1 }];
+    });
+    setAddedId(productId);
+    window.setTimeout(() => setAddedId(null), 1200);
+  }
+
+  function setQty(productId: string, qty: number) {
+    const product = products.find((item) => item.id === productId);
+    if (!product) return;
+    if (qty <= 0) {
+      setCart((prev) => prev.filter((line) => line.productId !== productId));
+      return;
+    }
+    setCart((prev) =>
+      prev.map((line) =>
+        line.productId === productId
+          ? { ...line, qty: Math.min(product.stock, qty) }
+          : line,
+      ),
+    );
+  }
 
   function openCart() {
+    if (!shop?.isOpen) return;
     setCheckout(false);
     setError("");
     setCartOpen(true);
   }
 
-  function add(productId: string) {
-    addToCart(productId);
-    setAddedId(productId);
-    window.setTimeout(() => setAddedId(null), 1200);
-  }
-
-  function submitOrder() {
+  async function submitOrder() {
+    if (!shop) return;
     const digits = form.phone.replace(/\D/g, "");
     if (!form.name.trim() || digits.length < 10 || !form.address.trim()) {
       setError(t("store.required"));
       return;
     }
-    const order = placeOrder({
-      customerName: form.name,
-      customerPhone: form.phone,
-      address: form.address,
-      note: form.note,
-      paymentMethod: method,
-    });
-    if (!order) return;
+    if (cartLines.length === 0) {
+      setError(t("store.cartEmpty"));
+      return;
+    }
+    setPlacing(true);
     setError("");
-    setSuccess(order);
-    setCartOpen(false);
-    setCheckout(false);
-    setForm({ name: "", phone: "", address: "", note: "" });
+    try {
+      const order = await placeOrder(
+        shop.id,
+        {
+          customerName: form.name.trim(),
+          customerPhone: form.phone.trim(),
+          address: form.address.trim(),
+          note: form.note.trim(),
+          paymentMethod: method,
+        },
+        cartLines.map((line) => ({
+          product_id: line.product.id,
+          qty: line.qty,
+        })),
+      );
+      setSuccess(order);
+      setCart([]);
+      setCartOpen(false);
+      setCheckout(false);
+      setForm({ name: "", phone: "", address: "", note: "" });
+      void getProducts(shop.id).then(setProducts);
+    } catch (cause) {
+      const message = cause instanceof Error ? cause.message : "";
+      if (message.includes("SHOP_CLOSED")) {
+        setError("This shop has paused new orders. Please try again later.");
+      } else if (message.includes("OUT_OF_STOCK")) {
+        setError(
+          `Sorry, ${message.split(":")[1] ?? "an item"} just went out of stock. Please adjust your cart.`,
+        );
+        void getProducts(shop.id).then(setProducts);
+      } else if (message.includes("PAYMENT_METHOD_NOT_AVAILABLE")) {
+        setError("That payment method is not available right now.");
+      } else {
+        setError("Could not place the order. Please check your details and try again.");
+      }
+    } finally {
+      setPlacing(false);
+    }
   }
 
-  if (!hydrated) {
+  if (status === "loading") {
     return (
       <div className="min-h-screen bg-[#faf7ff]">
         <AppLoader />
@@ -154,7 +247,32 @@ export default function StorefrontPage() {
     );
   }
 
-  if (shop.slug !== slug) {
+  if (status === "error") {
+    return (
+      <div className="grid min-h-screen place-items-center bg-[#faf7ff] px-4">
+        <div className="card w-full max-w-md p-8 text-center">
+          <Logo className="justify-center" />
+          <h1 className="mt-6 text-xl font-extrabold text-ink">
+            Could not load this shop
+          </h1>
+          <p className="mt-1 text-sm text-ink-muted">{loadError}</p>
+          <button
+            type="button"
+            onClick={() => window.location.reload()}
+            className="btn-primary mt-5 w-full px-4 py-3"
+          >
+            Try again
+          </button>
+        </div>
+      </div>
+    );
+  }
+
+  if (
+    status === "missing" ||
+    !shop ||
+    !slug
+  ) {
     return (
       <div className="grid min-h-screen place-items-center bg-[#faf7ff] px-4">
         <div className="card w-full max-w-md p-8 text-center">
@@ -163,12 +281,12 @@ export default function StorefrontPage() {
             Shop not found
           </h1>
           <p className="mt-1 text-sm text-ink-muted">
-            This link does not match any shop. Check the link or visit the
-            current demo shop.
+            This link does not match any shop. Check the link or browse all
+            shops on DukaanDost.
           </p>
           <div className="mt-5 flex flex-col gap-2">
-            <Link href={`/shop/${shop.slug}`} className="btn-primary px-4 py-3">
-              Visit {shop.name}
+            <Link href="/shops" className="btn-primary px-4 py-3">
+              Browse all shops
             </Link>
             <Link href="/" className="btn-ghost px-4 py-3">
               Back to DukaanDost
@@ -178,6 +296,8 @@ export default function StorefrontPage() {
       </div>
     );
   }
+
+  const closed = !shop.isOpen;
 
   return (
     <div
@@ -192,6 +312,7 @@ export default function StorefrontPage() {
             <ShopAvatar
               emoji={shop.logoEmoji}
               theme={shop.logoColor}
+              imageUrl={shop.logoUrl}
               size="sm"
             />
             <div className="min-w-0">
@@ -204,11 +325,18 @@ export default function StorefrontPage() {
             </div>
           </div>
           <div className="flex shrink-0 items-center gap-2">
-            <LangToggle compact />
+            <button
+              type="button"
+              onClick={() => setLang((prev) => (prev === "ur" ? "en" : "ur"))}
+              className="chip border border-royal-200 bg-white text-royal-800"
+            >
+              {lang === "ur" ? "English" : "اردو"}
+            </button>
             <button
               type="button"
               onClick={openCart}
-              className="btn-primary relative px-3.5 py-2.5"
+              disabled={closed}
+              className="btn-primary relative px-3.5 py-2.5 disabled:opacity-50"
             >
               <ShoppingCart className="h-4 w-4" />
               <span className="hidden sm:inline">{t("store.cart")}</span>
@@ -231,12 +359,25 @@ export default function StorefrontPage() {
             <ShopAvatar
               emoji={shop.logoEmoji}
               theme={shop.logoColor}
+              imageUrl={shop.logoUrl}
               size="lg"
             />
             <div className="min-w-0 flex-1">
-              <span className="chip border border-emerald-300/30 bg-emerald-400/15 text-emerald-200">
-                <span className="h-1.5 w-1.5 rounded-full bg-emerald-300" />
-                {t("store.open")}
+              <span
+                className={cn(
+                  "chip border",
+                  closed
+                    ? "border-rose-300/30 bg-rose-400/15 text-rose-100"
+                    : "border-emerald-300/30 bg-emerald-400/15 text-emerald-200",
+                )}
+              >
+                <span
+                  className={cn(
+                    "h-1.5 w-1.5 rounded-full",
+                    closed ? "bg-rose-300" : "bg-emerald-300",
+                  )}
+                />
+                {closed ? "Closed for orders" : t("store.open")}
               </span>
               <h1 className="mt-2 text-3xl font-extrabold tracking-tight text-white sm:text-4xl">
                 {shop.name}
@@ -248,31 +389,44 @@ export default function StorefrontPage() {
                 {shop.description}
               </p>
               <div className="mt-4 flex flex-wrap items-center gap-2">
-                <a
-                  href={waLink(
-                    shop.whatsappNumber,
-                    `Assalam-o-Alaikum! I would like to order from ${shop.name}.`,
-                  )}
-                  target="_blank"
-                  rel="noreferrer"
-                  className="btn-gold px-4 py-2.5"
-                >
-                  <MessageCircle className="h-4 w-4" />
-                  {t("store.contact")}
-                </a>
+                {shop.whatsappNumber && (
+                  <a
+                    href={waLink(
+                      shop.whatsappNumber,
+                      `Assalam-o-Alaikum! I would like to order from ${shop.name}.`,
+                    )}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="btn-gold px-4 py-2.5"
+                  >
+                    <MessageCircle className="h-4 w-4" />
+                    {t("store.contact")}
+                  </a>
+                )}
                 <span className="chip border border-white/15 bg-white/10 text-white/85">
                   <Package className="h-3.5 w-3.5 text-gold-300" />
                   {products.length} {t("store.products")}
                 </span>
-                <span className="chip border border-white/15 bg-white/10 text-white/85">
-                  <Check className="h-3.5 w-3.5 text-emerald-300" />
-                  {deliveredCount} {t("store.reviews")}
-                </span>
+                {shop.deliveryNote && (
+                  <span className="chip border border-white/15 bg-white/10 text-white/85">
+                    <Truck className="h-3.5 w-3.5 text-gold-300" />
+                    {shop.deliveryNote}
+                  </span>
+                )}
               </div>
             </div>
           </div>
         </div>
       </section>
+
+      {closed && (
+        <div className="mx-auto mt-4 max-w-6xl px-4">
+          <div className="rounded-2xl border border-rose-200 bg-rose-50 px-4 py-3 text-sm font-bold text-rose-700">
+            This shop has paused new orders. You can still browse the products
+            and contact the owner on WhatsApp.
+          </div>
+        </div>
+      )}
 
       <main className="mx-auto max-w-6xl px-4 py-7">
         <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
@@ -316,13 +470,21 @@ export default function StorefrontPage() {
                 >
                   <div
                     className={cn(
-                      "relative grid h-44 place-items-center",
+                      "relative grid h-44 place-items-center overflow-hidden",
                       themeTile(product.theme),
                     )}
                   >
-                    <span className="text-6xl drop-shadow-md transition duration-300 group-hover:scale-110">
-                      {product.emoji}
-                    </span>
+                    {product.imageUrl ? (
+                      <img
+                        src={product.imageUrl}
+                        alt={product.name}
+                        className="absolute inset-0 h-full w-full object-cover transition duration-300 group-hover:scale-105"
+                      />
+                    ) : (
+                      <span className="text-6xl drop-shadow-md transition duration-300 group-hover:scale-110">
+                        {product.emoji}
+                      </span>
+                    )}
                     {!product.inStock && (
                       <div className="absolute inset-0 grid place-items-center bg-ink/55 backdrop-blur-[2px]">
                         <span className="rounded-full bg-white px-3 py-1.5 text-xs font-extrabold text-rose-700">
@@ -374,9 +536,11 @@ export default function StorefrontPage() {
                           ? t("products.inStock")
                           : t("store.outOfStock")}
                       </span>
-                      {!product.inStock ? (
+                      {!product.inStock || closed ? (
                         <span className="rounded-full bg-royal-50 px-3 py-1.5 text-[11px] font-extrabold text-ink-muted">
-                          {t("store.outOfStock")}
+                          {closed
+                            ? "Closed"
+                            : t("store.outOfStock")}
                         </span>
                       ) : qty > 0 ? (
                         <div className="flex items-center gap-1 rounded-full border border-royal-100 bg-white p-1">
@@ -438,12 +602,12 @@ export default function StorefrontPage() {
             {
               icon: Truck,
               title: "Cash on delivery",
-              body: "Pay when your order arrives, or use Easypaisa and JazzCash.",
+              body: "Pay when your order arrives, or use the shop's online payment methods.",
             },
             {
               icon: Sparkles,
-              title: "Baked fresh",
-              body: "Small-batch orders prepared after you order.",
+              title: "Made with DukaanDost",
+              body: "A simple storefront built for small Pakistani businesses.",
             },
           ].map((item) => (
             <div
@@ -476,7 +640,7 @@ export default function StorefrontPage() {
             </span>
           </div>
           <Link
-            href="/onboarding"
+            href="/login?mode=signup"
             className="flex items-center gap-1 text-xs font-extrabold text-royal-700 hover:underline"
           >
             Create your own shop
@@ -485,7 +649,7 @@ export default function StorefrontPage() {
         </div>
       </footer>
 
-      {cartCount > 0 && !cartOpen && (
+      {cartCount > 0 && !cartOpen && !closed && (
         <div className="fixed inset-x-3 bottom-3 z-40 sm:hidden">
           <button
             type="button"
@@ -531,11 +695,12 @@ export default function StorefrontPage() {
               </div>
               <button
                 type="button"
-                onClick={submitOrder}
-                className="btn-primary w-full py-3"
+                onClick={() => void submitOrder()}
+                disabled={placing}
+                className="btn-primary w-full py-3 disabled:opacity-60"
               >
                 <Check className="h-4 w-4" />
-                {t("store.placeOrder")}
+                {placing ? "Placing order…" : t("store.placeOrder")}
               </button>
               <button
                 type="button"
@@ -742,10 +907,11 @@ export default function StorefrontPage() {
                   <p className="text-ink-muted">{t("store.paymentNote")}</p>
                   <p className="text-sm font-extrabold text-royal-900" dir="ltr">
                     {method === "easypaisa" &&
-                      `Easypaisa · ${shop.paymentAccounts.easypaisa}`}
+                      `Easypaisa · ${shop.paymentAccounts.easypaisa || "Ask on WhatsApp"}`}
                     {method === "jazzcash" &&
-                      `JazzCash · ${shop.paymentAccounts.jazzcash}`}
-                    {method === "bank" && shop.paymentAccounts.bank}
+                      `JazzCash · ${shop.paymentAccounts.jazzcash || "Ask on WhatsApp"}`}
+                    {method === "bank" &&
+                      (shop.paymentAccounts.bank || "Ask on WhatsApp")}
                   </p>
                 </div>
               )}
@@ -759,8 +925,16 @@ export default function StorefrontPage() {
                     key={line.product.id}
                     className="flex items-center gap-2.5 rounded-xl border border-royal-100 p-2.5"
                   >
-                    <span className="grid h-8 w-8 place-items-center rounded-lg bg-royal-50 text-base">
-                      {line.product.emoji}
+                    <span className="relative grid h-8 w-8 place-items-center overflow-hidden rounded-lg bg-royal-50 text-base">
+                      {line.product.imageUrl ? (
+                        <img
+                          src={line.product.imageUrl}
+                          alt=""
+                          className="absolute inset-0 h-full w-full object-cover"
+                        />
+                      ) : (
+                        line.product.emoji
+                      )}
                     </span>
                     <span className="min-w-0 flex-1 truncate text-xs font-bold text-ink">
                       {line.product.name}
@@ -785,11 +959,19 @@ export default function StorefrontPage() {
               >
                 <span
                   className={cn(
-                    "grid h-16 w-16 shrink-0 place-items-center rounded-xl text-2xl",
+                    "relative grid h-16 w-16 shrink-0 place-items-center overflow-hidden rounded-xl text-2xl",
                     themeTile(line.product.theme),
                   )}
                 >
-                  {line.product.emoji}
+                  {line.product.imageUrl ? (
+                    <img
+                      src={line.product.imageUrl}
+                      alt=""
+                      className="absolute inset-0 h-full w-full object-cover"
+                    />
+                  ) : (
+                    line.product.emoji
+                  )}
                 </span>
                 <div className="min-w-0 flex-1">
                   <div className="flex items-start justify-between gap-2">
@@ -798,7 +980,7 @@ export default function StorefrontPage() {
                     </p>
                     <button
                       type="button"
-                      onClick={() => removeFromCart(line.product.id)}
+                      onClick={() => setQty(line.product.id, 0)}
                       className="text-ink-muted transition hover:text-rose-600"
                       title={t("store.remove")}
                     >
@@ -843,18 +1025,14 @@ export default function StorefrontPage() {
             <div className="rounded-2xl bg-royal-50/60 p-3 text-center">
               <p className="flex items-center justify-center gap-1.5 text-[11px] font-semibold text-ink-muted">
                 <Store className="h-3.5 w-3.5 text-royal-600" />
-                {t("store.poweredBy")} DukaanDost · dukaandost.app
+                {t("store.poweredBy")} DukaanDost
               </p>
             </div>
           </div>
         )}
       </Drawer>
 
-      <Modal
-        open={Boolean(success)}
-        onClose={() => setSuccess(null)}
-        size="sm"
-      >
+      <Modal open={Boolean(success)} onClose={() => setSuccess(null)} size="sm">
         {success && (
           <div className="pb-1 text-center">
             <span className="mx-auto grid h-16 w-16 place-items-center rounded-full bg-emerald-100 text-emerald-600">
@@ -897,18 +1075,20 @@ export default function StorefrontPage() {
                 </span>
               </div>
             </div>
-            <a
-              href={waLink(
-                shop.whatsappNumber,
-                `Assalam-o-Alaikum! I just placed order #${success.orderNumber} on ${shop.name}. Please confirm it.`,
-              )}
-              target="_blank"
-              rel="noreferrer"
-              className="btn-primary mt-4 w-full py-3"
-            >
-              <MessageCircle className="h-4 w-4" />
-              {t("store.whatsappConfirm")}
-            </a>
+            {shop.whatsappNumber && (
+              <a
+                href={waLink(
+                  shop.whatsappNumber,
+                  `Assalam-o-Alaikum! I just placed order #${success.orderNumber} on ${shop.name}. Please confirm it.`,
+                )}
+                target="_blank"
+                rel="noreferrer"
+                className="btn-primary mt-4 w-full py-3"
+              >
+                <MessageCircle className="h-4 w-4" />
+                {t("store.whatsappConfirm")}
+              </a>
+            )}
             <button
               type="button"
               onClick={() => setSuccess(null)}

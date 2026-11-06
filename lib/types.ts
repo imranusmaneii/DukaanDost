@@ -11,7 +11,21 @@ export type PaymentStatus = "pending" | "paid";
 
 export type PaymentMethod = "cod" | "easypaisa" | "jazzcash" | "bank";
 
+export interface Profile {
+  id: string;
+  fullName: string;
+  phone: string;
+}
+
+export interface PaymentAccounts {
+  easypaisa: string;
+  jazzcash: string;
+  bank: string;
+}
+
 export interface Shop {
+  id: string;
+  ownerId: string;
   name: string;
   slug: string;
   ownerName: string;
@@ -20,24 +34,44 @@ export interface Shop {
   whatsappNumber: string;
   logoEmoji: string;
   logoColor: string;
+  logoUrl?: string | null;
+  isOpen: boolean;
   paymentMethods: PaymentMethod[];
-  paymentAccounts: {
-    easypaisa: string;
-    jazzcash: string;
-    bank: string;
-  };
+  paymentAccounts: PaymentAccounts;
+  deliveryNote: string;
+  language: Lang;
+  createdAt: string;
+}
+
+export interface ShopInput {
+  name: string;
+  slug: string;
+  ownerName?: string;
+  tagline: string;
+  description: string;
+  whatsappNumber: string;
+  logoEmoji: string;
+  logoColor: string;
+  logoUrl?: string | null;
+  isOpen?: boolean;
+  paymentMethods: PaymentMethod[];
+  paymentAccounts: PaymentAccounts;
+  deliveryNote: string;
   language: Lang;
 }
 
 export interface Product {
   id: string;
+  shopId?: string;
   name: string;
   price: number;
   description: string;
   emoji: string;
   theme: string;
+  imageUrl?: string | null;
   inStock: boolean;
   stock: number;
+  createdAt?: string;
 }
 
 export interface CartLine {
@@ -52,10 +86,12 @@ export interface OrderItem {
   qty: number;
   emoji: string;
   theme: string;
+  imageUrl?: string | null;
 }
 
 export interface Order {
   id: string;
+  shopId?: string;
   orderNumber: number;
   customerName: string;
   customerPhone: string;

@@ -1,19 +1,21 @@
 "use client";
 
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
+import { useEffect, type ReactNode } from "react";
 import {
   ArrowUpRight,
   LayoutDashboard,
   LogOut,
   Package,
   Settings,
+  ShieldCheck,
   ShoppingBag,
   Sparkles,
   Store,
   Wallet,
 } from "lucide-react";
-import type { ReactNode } from "react";
+import { useAuth } from "@/lib/auth";
 import { useStore } from "@/lib/store";
 import { cn } from "@/lib/utils";
 import {
@@ -29,17 +31,24 @@ const NAV = [
   { href: "/dashboard/products", key: "nav.products", icon: Package },
   { href: "/dashboard/payments", key: "nav.payments", icon: Wallet },
   { href: "/dashboard/settings", key: "nav.settings", icon: Settings },
+  { href: "/dashboard/admin", key: "nav.admin", icon: ShieldCheck },
 ];
 
 export function DashboardShell({ children }: { children: ReactNode }) {
-  const { shop, orders, t, lang, hydrated } = useStore();
+  const { shop, orders, t, lang, hydrated, hasShop } = useStore();
+  const { profile, signOut } = useAuth();
   const pathname = usePathname();
+  const router = useRouter();
   const pendingCount = orders.filter(
     (order) =>
       order.orderStatus === "pending" && order.paymentStatus === "pending",
   ).length;
 
-  if (!hydrated) {
+  useEffect(() => {
+    if (hydrated && !hasShop) router.replace("/onboarding");
+  }, [hydrated, hasShop, router]);
+
+  if (!hydrated || !hasShop) {
     return (
       <div className="min-h-screen bg-[#faf7ff]">
         <div className="mx-auto max-w-6xl px-4 py-10">
@@ -48,6 +57,14 @@ export function DashboardShell({ children }: { children: ReactNode }) {
       </div>
     );
   }
+
+  const ownerName = shop.ownerName || profile?.fullName || "Shop owner";
+  const initials =
+    ownerName
+      .split(" ")
+      .map((part) => part[0])
+      .slice(0, 2)
+      .join("") || "DD";
 
   return (
     <div className={cn("min-h-screen bg-[#faf7ff]", lang === "ur" && "font-urdu")}>
@@ -58,7 +75,11 @@ export function DashboardShell({ children }: { children: ReactNode }) {
 
         <div className="mt-7 rounded-2xl border border-royal-100 bg-royal-50/60 p-3.5">
           <div className="flex items-center gap-3">
-            <ShopAvatar emoji={shop.logoEmoji} theme={shop.logoColor} />
+            <ShopAvatar
+              emoji={shop.logoEmoji}
+              theme={shop.logoColor}
+              imageUrl={shop.logoUrl}
+            />
             <div className="min-w-0">
               <p className="truncate text-sm font-extrabold text-ink">
                 {shop.name}
@@ -143,26 +164,23 @@ export function DashboardShell({ children }: { children: ReactNode }) {
         <div className="mt-4 flex items-center justify-between border-t border-royal-100 pt-4">
           <div className="flex items-center gap-2.5">
             <span className="grid h-9 w-9 place-items-center rounded-full bg-royal-100 text-xs font-extrabold text-royal-800">
-              {shop.ownerName
-                .split(" ")
-                .map((part) => part[0])
-                .slice(0, 2)
-                .join("")}
+              {initials}
             </span>
             <div className="min-w-0">
               <p className="truncate text-xs font-bold text-ink">
-                {shop.ownerName}
+                {ownerName}
               </p>
               <p className="text-[11px] text-ink-muted">Owner</p>
             </div>
           </div>
-          <Link
-            href="/"
+          <button
+            type="button"
+            onClick={() => void signOut()}
             title="Log out"
             className="grid h-9 w-9 place-items-center rounded-full text-ink-muted transition hover:bg-rose-50 hover:text-rose-600"
           >
             <LogOut className="h-4 w-4" />
-          </Link>
+          </button>
         </div>
       </aside>
 
@@ -176,6 +194,7 @@ export function DashboardShell({ children }: { children: ReactNode }) {
           <ShopAvatar
             emoji={shop.logoEmoji}
             theme={shop.logoColor}
+            imageUrl={shop.logoUrl}
             size="sm"
           />
         </div>

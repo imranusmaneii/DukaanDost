@@ -6,218 +6,266 @@ import {
   useContext,
   useEffect,
   useMemo,
-  useRef,
   useState,
   type ReactNode,
 } from "react";
-import { createSeedState } from "./seed";
 import { makeT } from "./i18n";
+import { useAuth } from "./auth";
+import {
+  createProduct as createProductRecord,
+  createShop as createShopRecord,
+  deleteProduct as deleteProductRecord,
+  getOrders,
+  getProducts,
+  getShopByOwner,
+  updateOrder,
+  updateProduct as updateProductRecord,
+  updateShop as updateShopRecord,
+} from "./data";
 import type {
-  CheckoutDetails,
   Lang,
   Order,
   OrderStatus,
   PaymentStatus,
   Product,
   Shop,
-  ShopState,
+  ShopInput,
 } from "./types";
-import { uid } from "./utils";
 
-const STORAGE_KEY = "dukaandost:v1";
+const LANG_KEY = "dukaandost:lang";
 
-interface StoreContextValue extends ShopState {
+export const EMPTY_SHOP: Shop = {
+  id: "",
+  ownerId: "",
+  name: "Your shop",
+  slug: "",
+  ownerName: "",
+  tagline: "",
+  description: "",
+  whatsappNumber: "",
+  logoEmoji: "🏪",
+  logoColor: "royal",
+  logoUrl: null,
+  isOpen: true,
+  paymentMethods: ["cod"],
+  paymentAccounts: { easypaisa: "", jazzcash: "", bank: "" },
+  deliveryNote: "",
+  language: "en",
+  createdAt: "",
+};
+
+interface StoreContextValue {
+  shop: Shop;
+  products: Product[];
+  orders: Order[];
+  lang: Lang;
   hydrated: boolean;
+  hasShop: boolean;
+  error: string;
   t: (key: string) => string;
   setLang: (lang: Lang) => void;
-  addToCart: (productId: string, qty?: number) => void;
-  setQty: (productId: string, qty: number) => void;
-  removeFromCart: (productId: string) => void;
-  clearCart: () => void;
-  cartCount: number;
-  cartSubtotal: number;
-  placeOrder: (details: CheckoutDetails) => Order | null;
-  updateOrder: (id: string, patch: Partial<Order>) => void;
-  setOrderStatus: (id: string, status: OrderStatus) => void;
-  setPaymentStatus: (id: string, status: PaymentStatus) => void;
-  addProduct: (
-    input: Omit<Product, "id"> & { id?: string },
-  ) => Product;
-  updateProduct: (id: string, patch: Partial<Product>) => void;
-  deleteProduct: (id: string) => void;
-  updateShop: (patch: Partial<Shop>) => void;
-  resetDemo: () => void;
+  createShop: (input: ShopInput) => Promise<Shop>;
+  updateShop: (patch: Partial<Shop>) => Promise<void>;
+  addProduct: (input: Omit<Product, "id" | "shopId">) => Promise<Product>;
+  updateProduct: (id: string, patch: Partial<Product>) => Promise<void>;
+  deleteProduct: (id: string) => Promise<void>;
+  setOrderStatus: (id: string, status: OrderStatus) => Promise<void>;
+  setPaymentStatus: (id: string, status: PaymentStatus) => Promise<void>;
+  refresh: () => Promise<void>;
 }
 
 const StoreContext = createContext<StoreContextValue | null>(null);
 
+function readLang(): Lang {
+  if (typeof window === "undefined") return "en";
+  const stored = window.localStorage.getItem(LANG_KEY);
+  return stored === "ur" ? "ur" : "en";
+}
+
 export function StoreProvider({ children }: { children: ReactNode }) {
-  const [state, setState] = useState<ShopState>(() => createSeedState());
+  const { user, loading: authLoading, refreshProfile } = useAuth();
+  const [shop, setShop] = useState<Shop>(EMPTY_SHOP);
+  const [products, setProducts] = useState<Product[]>([]);
+  const [orders, setOrders] = useState<Order[]>([]);
+  const [hasShop, setHasShop] = useState(false);
   const [hydrated, setHydrated] = useState(false);
-  const hydratedRef = useRef(false);
+  const [error, setError] = useState("");
+  const [lang, setLangState] = useState<Lang>("en");
 
   useEffect(() => {
+    setLangState(readLang());
+  }, []);
+
+  useEffect(() => {
+    document.documentElement.lang = lang;
+    document.documentElement.dir = lang === "ur" ? "rtl" : "ltr";
     try {
-      const raw = window.localStorage.getItem(STORAGE_KEY);
-      if (raw) {
-        const parsed = JSON.parse(raw) as ShopState;
-        if (parsed?.shop && Array.isArray(parsed.products)) {
-          setState({
-            ...createSeedState(),
-            ...parsed,
-            cart: Array.isArray(parsed.cart) ? parsed.cart : [],
-          });
-        }
+      window.localStorage.setItem(LANG_KEY, lang);
+    } catch {
+      // storage may be unavailable
+    }
+  }, [lang]);
+
+  const load = useCallback(
+    async (userId: string | null) => {
+      setHydrated(false);
+      setError("");
+      if (!userId) {
+        setShop(EMPTY_SHOP);
+        setProducts([]);
+        setOrders([]);
+        setHasShop(false);
+        setHydrated(true);
+        return;
       }
-    } catch {
-      // ignore corrupt storage and fall back to demo data
-    }
-    hydratedRef.current = true;
-    setHydrated(true);
-  }, []);
-
-  useEffect(() => {
-    if (!hydratedRef.current) return;
-    try {
-      window.localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
-    } catch {
-      // storage may be unavailable in private mode
-    }
-  }, [state]);
-
-  const setLang = useCallback((lang: Lang) => {
-    setState((prev) => ({
-      ...prev,
-      lang,
-      shop: { ...prev.shop, language: lang },
-    }));
-  }, []);
-
-  useEffect(() => {
-    document.documentElement.lang = state.lang;
-    document.documentElement.dir = state.lang === "ur" ? "rtl" : "ltr";
-  }, [state.lang]);
-
-  const addToCart = useCallback((productId: string, qty = 1) => {
-    setState((prev) => {
-      const product = prev.products.find((p) => p.id === productId);
-      if (!product || !product.inStock) return prev;
-      const existing = prev.cart.find((line) => line.productId === productId);
-      const nextQty = Math.min((existing?.qty ?? 0) + qty, product.stock);
-      return {
-        ...prev,
-        cart: existing
-          ? prev.cart.map((line) =>
-              line.productId === productId
-                ? { ...line, qty: nextQty }
-                : line,
-            )
-          : [...prev.cart, { productId, qty: nextQty }],
-      };
-    });
-  }, []);
-
-  const setQty = useCallback((productId: string, qty: number) => {
-    setState((prev) => {
-      const product = prev.products.find((p) => p.id === productId);
-      const max = product?.stock ?? 0;
-      return {
-        ...prev,
-        cart:
-          qty <= 0
-            ? prev.cart.filter((line) => line.productId !== productId)
-            : prev.cart.map((line) =>
-                line.productId === productId
-                  ? { ...line, qty: Math.min(qty, max) }
-                  : line,
-              ),
-      };
-    });
-  }, []);
-
-  const removeFromCart = useCallback((productId: string) => {
-    setState((prev) => ({
-      ...prev,
-      cart: prev.cart.filter((line) => line.productId !== productId),
-    }));
-  }, []);
-
-  const clearCart = useCallback(() => {
-    setState((prev) => ({ ...prev, cart: [] }));
-  }, []);
-
-  const cartCount = state.cart.reduce((sum, line) => sum + line.qty, 0);
-  const cartSubtotal = state.cart.reduce((sum, line) => {
-    const product = state.products.find((p) => p.id === line.productId);
-    return sum + (product ? product.price * line.qty : 0);
-  }, 0);
-
-  const placeOrder = useCallback(
-    (details: CheckoutDetails): Order | null => {
-      const items = state.cart
-        .map((line) => {
-          const product = state.products.find((p) => p.id === line.productId);
-          if (!product) return null;
-          return {
-            productId: product.id,
-            name: product.name,
-            price: product.price,
-            qty: line.qty,
-            emoji: product.emoji,
-            theme: product.theme,
-          };
-        })
-        .filter((item): item is NonNullable<typeof item> => Boolean(item));
-      if (items.length === 0) return null;
-      const nextNumber =
-        state.orders.reduce(
-          (max, order) => Math.max(max, order.orderNumber),
-          1000,
-        ) + 1;
-      const order: Order = {
-        id: uid("order"),
-        orderNumber: nextNumber,
-        customerName: details.customerName.trim(),
-        customerPhone: details.customerPhone.trim(),
-        address: details.address.trim(),
-        items,
-        total: items.reduce((sum, item) => sum + item.price * item.qty, 0),
-        paymentMethod: details.paymentMethod,
-        paymentStatus: "pending",
-        orderStatus: "pending",
-        note: details.note?.trim() || undefined,
-        createdAt: new Date().toISOString(),
-      };
-      setState((prev) => ({
-        ...prev,
-        orders: [order, ...prev.orders],
-        products: prev.products.map((product) => {
-          const item = items.find((entry) => entry.productId === product.id);
-          if (!item) return product;
-          const stock = Math.max(0, product.stock - item.qty);
-          return { ...product, stock, inStock: stock > 0 };
-        }),
-        cart: [],
-      }));
-      return order;
+      try {
+        const nextShop = await getShopByOwner(userId);
+        if (!nextShop) {
+          setShop(EMPTY_SHOP);
+          setProducts([]);
+          setOrders([]);
+          setHasShop(false);
+          return;
+        }
+        const [nextProducts, nextOrders] = await Promise.all([
+          getProducts(nextShop.id),
+          getOrders(nextShop.id),
+        ]);
+        setShop(nextShop);
+        setProducts(nextProducts);
+        setOrders(nextOrders);
+        setHasShop(true);
+        const stored = window.localStorage.getItem(LANG_KEY);
+        if (!stored) setLangState(nextShop.language);
+      } catch (cause) {
+        setError(cause instanceof Error ? cause.message : "Could not load shop");
+        setShop(EMPTY_SHOP);
+        setProducts([]);
+        setOrders([]);
+        setHasShop(false);
+      } finally {
+        setHydrated(true);
+      }
     },
-    [state],
+    [],
   );
 
-  const updateOrder = useCallback((id: string, patch: Partial<Order>) => {
-    setState((prev) => ({
-      ...prev,
-      orders: prev.orders.map((order) =>
-        order.id === id ? { ...order, ...patch } : order,
-      ),
-    }));
+  useEffect(() => {
+    if (authLoading) return;
+    void load(user?.id ?? null);
+  }, [authLoading, user?.id, load]);
+
+  const setLang = useCallback((next: Lang) => {
+    setLangState(next);
+    setShop((prev) => ({ ...prev, language: next }));
   }, []);
 
+  const createShop = useCallback(
+    async (input: ShopInput) => {
+      if (!user) throw new Error("Please sign in first.");
+      const created = await createShopRecord(user.id, input);
+      setShop(created);
+      setProducts([]);
+      setOrders([]);
+      setHasShop(true);
+      await refreshProfile();
+      return created;
+    },
+    [user, refreshProfile],
+  );
+
+  const updateShop = useCallback(
+    async (patch: Partial<Shop>) => {
+      setShop((prev) => ({ ...prev, ...patch, language: patch.language ?? lang }));
+      if (patch.language) setLangState(patch.language);
+      if (!shop.id) return;
+      try {
+        await updateShopRecord(shop.id, patch);
+        if (patch.ownerName) await refreshProfile();
+      } catch (cause) {
+        setError(cause instanceof Error ? cause.message : "Could not save shop");
+        throw cause;
+      }
+    },
+    [shop.id, lang, refreshProfile],
+  );
+
+  const addProduct = useCallback(
+    async (input: Omit<Product, "id" | "shopId">) => {
+      if (!shop.id) throw new Error("Create your shop first.");
+      const created = await createProductRecord(shop.id, input);
+      setProducts((prev) => [...prev, created]);
+      return created;
+    },
+    [shop.id],
+  );
+
+  const updateProduct = useCallback(
+    async (id: string, patch: Partial<Product>) => {
+      const previous = products;
+      setProducts((prev) =>
+        prev.map((product) =>
+          product.id === id ? { ...product, ...patch } : product,
+        ),
+      );
+      try {
+        await updateProductRecord(id, patch);
+      } catch (cause) {
+        setProducts(previous);
+        setError(
+          cause instanceof Error ? cause.message : "Could not save product",
+        );
+        throw cause;
+      }
+    },
+    [products],
+  );
+
+  const deleteProduct = useCallback(
+    async (id: string) => {
+      const previous = products;
+      setProducts((prev) => prev.filter((product) => product.id !== id));
+      try {
+        await deleteProductRecord(id);
+      } catch (cause) {
+        setProducts(previous);
+        setError(
+          cause instanceof Error ? cause.message : "Could not delete product",
+        );
+        throw cause;
+      }
+    },
+    [products],
+  );
+
+  const setPaymentStatus = useCallback(
+    async (id: string, status: PaymentStatus) => {
+      const previous = orders;
+      setOrders((prev) =>
+        prev.map((order) =>
+          order.id === id ? { ...order, paymentStatus: status } : order,
+        ),
+      );
+      try {
+        await updateOrder(id, { paymentStatus: status });
+      } catch (cause) {
+        setOrders(previous);
+        setError(
+          cause instanceof Error ? cause.message : "Could not update payment",
+        );
+        throw cause;
+      }
+    },
+    [orders],
+  );
+
   const setOrderStatus = useCallback(
-    (id: string, status: OrderStatus) => {
-      setState((prev) => ({
-        ...prev,
-        orders: prev.orders.map((order) =>
+    async (id: string, status: OrderStatus) => {
+      const previous = orders;
+      const paymentStatus: PaymentStatus | undefined =
+        status === "paid" ? "paid" : undefined;
+      setOrders((prev) =>
+        prev.map((order) =>
           order.id === id
             ? {
                 ...order,
@@ -227,109 +275,64 @@ export function StoreProvider({ children }: { children: ReactNode }) {
               }
             : order,
         ),
-      }));
+      );
+      try {
+        await updateOrder(id, { orderStatus: status, paymentStatus });
+      } catch (cause) {
+        setOrders(previous);
+        setError(
+          cause instanceof Error ? cause.message : "Could not update order",
+        );
+        throw cause;
+      }
     },
-    [],
+    [orders],
   );
 
-  const setPaymentStatus = useCallback(
-    (id: string, status: PaymentStatus) => {
-      setState((prev) => ({
-        ...prev,
-        orders: prev.orders.map((order) =>
-          order.id === id ? { ...order, paymentStatus: status } : order,
-        ),
-      }));
-    },
-    [],
-  );
+  const refresh = useCallback(async () => {
+    await load(user?.id ?? null);
+  }, [load, user?.id]);
 
-  const addProduct = useCallback(
-    (input: Omit<Product, "id"> & { id?: string }) => {
-      const product: Product = { ...input, id: input.id ?? uid("p") };
-      setState((prev) => ({
-        ...prev,
-        products: [...prev.products, product],
-      }));
-      return product;
-    },
-    [],
-  );
-
-  const updateProduct = useCallback((id: string, patch: Partial<Product>) => {
-    setState((prev) => ({
-      ...prev,
-      products: prev.products.map((product) =>
-        product.id === id ? { ...product, ...patch } : product,
-      ),
-    }));
-  }, []);
-
-  const deleteProduct = useCallback((id: string) => {
-    setState((prev) => ({
-      ...prev,
-      products: prev.products.filter((product) => product.id !== id),
-      cart: prev.cart.filter((line) => line.productId !== id),
-    }));
-  }, []);
-
-  const updateShop = useCallback((patch: Partial<Shop>) => {
-    setState((prev) => ({
-      ...prev,
-      shop: { ...prev.shop, ...patch },
-      lang: patch.language ?? prev.lang,
-    }));
-  }, []);
-
-  const resetDemo = useCallback(() => {
-    const fresh = createSeedState();
-    setState((prev) => ({ ...fresh, lang: prev.lang }));
-  }, []);
-
-  const t = useMemo(() => makeT(state.lang), [state.lang]);
+  const t = useMemo(() => makeT(lang), [lang]);
 
   const value = useMemo<StoreContextValue>(
     () => ({
-      ...state,
+      shop,
+      products,
+      orders,
+      lang,
       hydrated,
+      hasShop,
+      error,
       t,
       setLang,
-      addToCart,
-      setQty,
-      removeFromCart,
-      clearCart,
-      cartCount,
-      cartSubtotal,
-      placeOrder,
-      updateOrder,
-      setOrderStatus,
-      setPaymentStatus,
+      createShop,
+      updateShop,
       addProduct,
       updateProduct,
       deleteProduct,
-      updateShop,
-      resetDemo,
+      setOrderStatus,
+      setPaymentStatus,
+      refresh,
     }),
     [
-      state,
+      shop,
+      products,
+      orders,
+      lang,
       hydrated,
+      hasShop,
+      error,
       t,
       setLang,
-      addToCart,
-      setQty,
-      removeFromCart,
-      clearCart,
-      cartCount,
-      cartSubtotal,
-      placeOrder,
-      updateOrder,
-      setOrderStatus,
-      setPaymentStatus,
+      createShop,
+      updateShop,
       addProduct,
       updateProduct,
       deleteProduct,
-      updateShop,
-      resetDemo,
+      setOrderStatus,
+      setPaymentStatus,
+      refresh,
     ],
   );
 

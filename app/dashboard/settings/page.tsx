@@ -1,67 +1,67 @@
 "use client";
 
-import { useState } from "react";
+import Link from "next/link";
+import { useEffect, useState } from "react";
 import {
-  AlertTriangle,
-  Banknote,
   Check,
-  CreditCard,
   Languages,
-  RotateCcw,
   Save,
-  Smartphone,
+  ShieldCheck,
   Store,
-  Truck,
+  Wallet,
 } from "lucide-react";
 import { useStore } from "@/lib/store";
-import type { Lang, PaymentMethod } from "@/lib/types";
+import type { Lang } from "@/lib/types";
 import {
-  PAYMENT_LABELS,
   PRODUCT_THEMES,
   THEME_KEYS,
   cn,
   slugify,
   EMOJI_CHOICES,
 } from "@/lib/utils";
-import { Modal, ShopAvatar, useToast } from "@/components/ui";
-import { seedShop } from "@/lib/seed";
+import { ImageUpload } from "@/components/ImageUpload";
+import { ShopAvatar, useToast } from "@/components/ui";
 
 export default function SettingsPage() {
-  const {
-    shop,
-    products,
-    lang,
-    t,
-    updateShop,
-    setLang,
-    resetDemo,
-    hydrated,
-  } = useStore();
+  const { shop, products, t, updateShop, setLang, hydrated } = useStore();
   const { show, node } = useToast();
   const [draft, setDraft] = useState(shop);
-  const [resetOpen, setResetOpen] = useState(false);
+  const [busy, setBusy] = useState(false);
+  const [error, setError] = useState("");
 
-  function toggleMethod(method: PaymentMethod) {
-    setDraft((prev) => {
-      const has = prev.paymentMethods.includes(method);
-      if (has && prev.paymentMethods.length === 1) return prev;
-      return {
-        ...prev,
-        paymentMethods: has
-          ? prev.paymentMethods.filter((item) => item !== method)
-          : [...prev.paymentMethods, method],
-      };
-    });
-  }
+  useEffect(() => {
+    setDraft(shop);
+  }, [shop]);
 
-  function save() {
-    updateShop({
-      ...draft,
-      slug: slugify(draft.slug || draft.name),
-      language: draft.language,
-    });
-    setLang(draft.language);
-    show(t("settings.saved"));
+  async function save() {
+    setError("");
+    if (!draft.name.trim()) {
+      setError("Shop name cannot be empty.");
+      return;
+    }
+    setBusy(true);
+    try {
+      await updateShop({
+        name: draft.name.trim(),
+        ownerName: draft.ownerName.trim(),
+        whatsappNumber: draft.whatsappNumber.trim(),
+        tagline: draft.tagline.trim(),
+        description: draft.description.trim(),
+        slug: slugify(draft.slug || draft.name),
+        logoEmoji: draft.logoEmoji,
+        logoColor: draft.logoColor,
+        logoUrl: draft.logoUrl,
+        language: draft.language,
+      });
+      setLang(draft.language);
+      show(t("settings.saved"));
+    } catch (cause) {
+      setError(
+        cause instanceof Error ? cause.message : "Could not save settings.",
+      );
+    } finally {
+      setBusy(false);
+    }
   }
 
   if (!hydrated) return null;
@@ -78,11 +78,22 @@ export default function SettingsPage() {
             {t("settings.subtitle")}
           </p>
         </div>
-        <button type="button" onClick={save} className="btn-primary px-4 py-2.5">
+        <button
+          type="button"
+          onClick={() => void save()}
+          disabled={busy}
+          className="btn-primary px-4 py-2.5 disabled:opacity-60"
+        >
           <Save className="h-4 w-4" />
-          {t("common.save")}
+          {busy ? "Saving…" : t("common.save")}
         </button>
       </div>
+
+      {error && (
+        <p className="rounded-xl bg-rose-50 px-3 py-2 text-xs font-bold text-rose-700">
+          {error}
+        </p>
+      )}
 
       <div className="grid gap-4 lg:grid-cols-3">
         <div className="card p-5 sm:p-6 lg:col-span-2">
@@ -93,6 +104,17 @@ export default function SettingsPage() {
             <h2 className="text-sm font-extrabold text-ink">
               {t("settings.shopInfo")}
             </h2>
+          </div>
+
+          <div className="mt-5">
+            <ImageUpload
+              value={draft.logoUrl}
+              onChange={(url) => setDraft((prev) => ({ ...prev, logoUrl: url }))}
+              folder="shop"
+              label="Shop logo or photo"
+              hint="A square photo works best. Shown on your storefront and dashboard."
+              fallback={<span className="text-3xl">{draft.logoEmoji}</span>}
+            />
           </div>
 
           <div className="mt-5 grid gap-4 sm:grid-cols-2">
@@ -148,7 +170,7 @@ export default function SettingsPage() {
               </label>
               <div className="flex items-center overflow-hidden rounded-2xl border border-royal-100 bg-white focus-within:border-royal-400 focus-within:ring-4 focus-within:ring-royal-200/60">
                 <span className="shrink-0 bg-royal-50 px-3 py-3 text-xs font-bold text-ink-muted">
-                  dukaandost.app/shop/
+                  /shop/
                 </span>
                 <input
                   id="slug"
@@ -252,6 +274,7 @@ export default function SettingsPage() {
                 <ShopAvatar
                   emoji={draft.logoEmoji}
                   theme={draft.logoColor}
+                  imageUrl={draft.logoUrl}
                   size="lg"
                 />
                 <div className="min-w-0">
@@ -259,7 +282,7 @@ export default function SettingsPage() {
                     {draft.name || "Your shop"}
                   </p>
                   <p className="truncate text-xs text-white/60">
-                    @{slugify(draft.slug || draft.name) || "your-shop"}
+                    /shop/{slugify(draft.slug || draft.name) || "your-shop"}
                   </p>
                 </div>
               </div>
@@ -329,210 +352,30 @@ export default function SettingsPage() {
               ))}
             </div>
           </div>
-        </div>
-      </div>
 
-      <div className="card p-5 sm:p-6">
-        <div className="flex items-center gap-2">
-          <span className="grid h-8 w-8 place-items-center rounded-xl bg-royal-50 text-royal-700">
-            <CreditCard className="h-4 w-4" />
-          </span>
-          <div>
-            <h2 className="text-sm font-extrabold text-ink">
-              {t("settings.paymentMethods")}
-            </h2>
-            <p className="text-xs text-ink-muted">
-              {t("settings.paymentHint")}
-            </p>
-          </div>
-        </div>
-
-        <div className="mt-4 grid gap-2.5 sm:grid-cols-2 lg:grid-cols-4">
-          {(
-            [
-              { id: "cod", icon: Truck },
-              { id: "easypaisa", icon: Smartphone },
-              { id: "jazzcash", icon: Smartphone },
-              { id: "bank", icon: Banknote },
-            ] as Array<{ id: PaymentMethod; icon: typeof Truck }>
-          ).map(({ id, icon: Icon }) => {
-            const active = draft.paymentMethods.includes(id);
-            return (
-              <button
-                key={id}
-                type="button"
-                onClick={() => toggleMethod(id)}
-                className={cn(
-                  "flex items-center gap-2.5 rounded-2xl border px-3.5 py-3 text-left transition rtl:text-right",
-                  active
-                    ? "border-royal-400 bg-royal-50"
-                    : "border-royal-100 hover:bg-royal-50/50",
-                )}
-              >
-                <span
-                  className={cn(
-                    "grid h-8 w-8 place-items-center rounded-xl",
-                    active
-                      ? "bg-royal-700 text-white"
-                      : "bg-royal-50 text-royal-700",
-                  )}
-                >
-                  <Icon className="h-4 w-4" />
-                </span>
-                <span className="flex-1 text-xs font-extrabold text-ink">
-                  {lang === "ur"
-                    ? PAYMENT_LABELS[id].ur
-                    : PAYMENT_LABELS[id].en}
-                </span>
-                <span
-                  className={cn(
-                    "grid h-5 w-5 place-items-center rounded-full border",
-                    active
-                      ? "border-royal-700 bg-royal-700 text-white"
-                      : "border-royal-200",
-                  )}
-                >
-                  {active && <Check className="h-3 w-3" />}
-                </span>
-              </button>
-            );
-          })}
-        </div>
-
-        <div className="mt-4 grid gap-3 sm:grid-cols-3">
-          {draft.paymentMethods.includes("easypaisa") && (
-            <div>
-              <label className="label" htmlFor="easypaisa">
-                {t("settings.easypaisa")}
-              </label>
-              <input
-                id="easypaisa"
-                value={draft.paymentAccounts.easypaisa}
-                onChange={(event) =>
-                  setDraft((prev) => ({
-                    ...prev,
-                    paymentAccounts: {
-                      ...prev.paymentAccounts,
-                      easypaisa: event.target.value,
-                    },
-                  }))
-                }
-                className="input"
-                dir="ltr"
-              />
-            </div>
-          )}
-          {draft.paymentMethods.includes("jazzcash") && (
-            <div>
-              <label className="label" htmlFor="jazzcash">
-                {t("settings.jazzcash")}
-              </label>
-              <input
-                id="jazzcash"
-                value={draft.paymentAccounts.jazzcash}
-                onChange={(event) =>
-                  setDraft((prev) => ({
-                    ...prev,
-                    paymentAccounts: {
-                      ...prev.paymentAccounts,
-                      jazzcash: event.target.value,
-                    },
-                  }))
-                }
-                className="input"
-                dir="ltr"
-              />
-            </div>
-          )}
-          {draft.paymentMethods.includes("bank") && (
-            <div>
-              <label className="label" htmlFor="bank">
-                {t("settings.bank")}
-              </label>
-              <input
-                id="bank"
-                value={draft.paymentAccounts.bank}
-                onChange={(event) =>
-                  setDraft((prev) => ({
-                    ...prev,
-                    paymentAccounts: {
-                      ...prev.paymentAccounts,
-                      bank: event.target.value,
-                    },
-                  }))
-                }
-                className="input"
-                dir="ltr"
-              />
-            </div>
-          )}
-        </div>
-
-        <div className="mt-5 flex justify-end">
-          <button type="button" onClick={save} className="btn-primary px-4 py-2.5">
-            <Save className="h-4 w-4" />
-            {t("common.save")}
-          </button>
-        </div>
-      </div>
-
-      <div className="rounded-3xl border border-rose-200 bg-rose-50/50 p-5 sm:p-6">
-        <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-          <div className="flex items-start gap-3">
-            <span className="grid h-9 w-9 shrink-0 place-items-center rounded-xl bg-rose-100 text-rose-700">
-              <AlertTriangle className="h-4 w-4" />
-            </span>
-            <div>
-              <h2 className="text-sm font-extrabold text-rose-900">
-                {t("settings.reset")}
+          <div className="card p-5">
+            <div className="flex items-center gap-2">
+              <span className="grid h-8 w-8 place-items-center rounded-xl bg-royal-50 text-royal-700">
+                <ShieldCheck className="h-4 w-4" />
+              </span>
+              <h2 className="text-sm font-extrabold text-ink">
+                Payments & admin
               </h2>
-              <p className="mt-0.5 max-w-xl text-xs text-rose-700/80">
-                {t("settings.resetHint")}
-              </p>
             </div>
+            <p className="mt-1 text-xs text-ink-muted">
+              Set your own Easypaisa, JazzCash or bank details and pause orders
+              from the Admin page.
+            </p>
+            <Link
+              href="/dashboard/admin"
+              className="btn-soft mt-3 w-full px-3 py-2.5 text-xs"
+            >
+              <Wallet className="h-4 w-4" />
+              Open Admin
+            </Link>
           </div>
-          <button
-            type="button"
-            onClick={() => setResetOpen(true)}
-            className="btn bg-white px-4 py-2.5 text-rose-700 ring-1 ring-inset ring-rose-200 hover:bg-rose-100"
-          >
-            <RotateCcw className="h-4 w-4" />
-            {t("settings.resetButton")}
-          </button>
         </div>
       </div>
-
-      <Modal
-        open={resetOpen}
-        onClose={() => setResetOpen(false)}
-        title={t("settings.reset")}
-        size="sm"
-        footer={
-          <div className="flex gap-2">
-            <button
-              type="button"
-              onClick={() => setResetOpen(false)}
-              className="btn-ghost flex-1 px-4 py-3"
-            >
-              {t("common.cancel")}
-            </button>
-            <button
-              type="button"
-              onClick={() => {
-                resetDemo();
-                setDraft({ ...seedShop, language: lang });
-                setResetOpen(false);
-                show(t("settings.resetButton"));
-              }}
-              className="btn-danger flex-1 px-4 py-3"
-            >
-              {t("settings.resetButton")}
-            </button>
-          </div>
-        }
-      >
-        <p className="text-sm text-ink-soft">{t("settings.resetHint")}</p>
-      </Modal>
     </div>
   );
 }

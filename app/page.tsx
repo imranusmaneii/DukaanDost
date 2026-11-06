@@ -40,6 +40,7 @@ const NAV = [
   { label: "How it works", href: "#how" },
   { label: "Earnings", href: "#earnings" },
   { label: "Pricing", href: "#pricing" },
+  { label: "Shops", href: "/shops" },
 ];
 
 export default function LandingPage() {
@@ -65,7 +66,7 @@ export default function LandingPage() {
             <Link href="/login" className="btn-ghost hidden px-4 py-2.5 sm:inline-flex">
               Sign in
             </Link>
-            <Link href="/onboarding" className="btn-primary px-4 py-2.5">
+            <Link href="/login?mode=signup" className="btn-primary px-4 py-2.5">
               Start free
               <ArrowRight className="h-4 w-4" />
             </Link>
@@ -109,16 +110,16 @@ export default function LandingPage() {
             </p>
 
             <div className="mt-7 flex flex-col gap-2.5 sm:flex-row sm:items-center">
-              <Link href="/onboarding" className="btn-gold px-6 py-3.5 text-sm">
+              <Link href="/login?mode=signup" className="btn-gold px-6 py-3.5 text-sm">
                 <Sparkles className="h-4 w-4" />
                 Create your shop free
               </Link>
               <Link
-                href="/shop/ayesha-bakes"
+                href="/shops"
                 className="btn-ghost px-6 py-3.5 text-sm"
               >
                 <Store className="h-4 w-4" />
-                See a live shop
+                Browse shops
                 <ArrowUpRight className="h-4 w-4" />
               </Link>
             </div>
@@ -591,7 +592,7 @@ export default function LandingPage() {
               ))}
             </div>
             <Link
-              href="/shop/ayesha-bakes"
+              href="/shops"
               className="btn-primary mt-7 px-5 py-3"
             >
               Try the customer flow
@@ -627,7 +628,7 @@ export default function LandingPage() {
                     hain 👇
                   </p>
                   <p className="mt-1 break-all rounded-lg bg-white/70 px-2 py-1 text-[9px] font-bold text-royal-700">
-                    dukaandost.app/shop/ayesha-bakes
+                    dukaandost.app/shops
                   </p>
                   <p className="mt-0.5 text-right text-[8px] text-ink-muted">
                     10:19 AM
@@ -926,7 +927,7 @@ export default function LandingPage() {
               ))}
             </div>
             <Link
-              href="/onboarding"
+              href="/login?mode=signup"
               className="btn-primary mt-6 w-full py-3"
             >
               Create my free shop
@@ -1003,7 +1004,7 @@ export default function LandingPage() {
               download an app. Just one link.
             </p>
             <div className="mt-7 flex flex-col items-center justify-center gap-2.5 sm:flex-row">
-              <Link href="/onboarding" className="btn-gold px-6 py-3.5">
+              <Link href="/login?mode=signup" className="btn-gold px-6 py-3.5">
                 Create your shop free
                 <ArrowRight className="h-4 w-4" />
               </Link>
@@ -1045,7 +1046,7 @@ export default function LandingPage() {
                   { label: "Features", href: "#features" },
                   { label: "How it works", href: "#how" },
                   { label: "Pricing", href: "#pricing" },
-                  { label: "Live demo shop", href: "/shop/ayesha-bakes" },
+                  { label: "Browse shops", href: "/shops" },
                 ].map((link) => (
                   <a
                     key={link.label}
@@ -1063,7 +1064,7 @@ export default function LandingPage() {
               </p>
               <div className="mt-3 space-y-2">
                 {[
-                  { label: "Create a shop", href: "/onboarding" },
+                  { label: "Create a shop", href: "/login?mode=signup" },
                   { label: "Open dashboard", href: "/dashboard" },
                   { label: "Sign in", href: "/login" },
                   { label: "Settings", href: "/dashboard/settings" },

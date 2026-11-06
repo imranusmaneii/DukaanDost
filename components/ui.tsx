@@ -163,10 +163,12 @@ export function ShopAvatar({
   emoji,
   theme,
   size = "md",
+  imageUrl,
 }: {
   emoji: string;
   theme: string;
   size?: "sm" | "md" | "lg";
+  imageUrl?: string | null;
 }) {
   const sizes = {
     sm: "h-10 w-10 text-xl rounded-xl",
@@ -176,12 +178,20 @@ export function ShopAvatar({
   return (
     <span
       className={cn(
-        "grid shrink-0 place-items-center shadow-inner",
+        "relative grid shrink-0 place-items-center overflow-hidden shadow-inner",
         sizes[size],
         logoGradient(theme),
       )}
     >
-      <span className="drop-shadow-sm">{emoji}</span>
+      {imageUrl ? (
+        <img
+          src={imageUrl}
+          alt=""
+          className="absolute inset-0 h-full w-full object-cover"
+        />
+      ) : (
+        <span className="drop-shadow-sm">{emoji}</span>
+      )}
     </span>
   );
 }
