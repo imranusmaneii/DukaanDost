@@ -14,8 +14,10 @@ import { useStore } from "@/lib/store";
 import type { Lang } from "@/lib/types";
 import {
   PRODUCT_THEMES,
+  SHOP_DOMAIN,
   THEME_KEYS,
   cn,
+  shopHost,
   slugify,
   EMOJI_CHOICES,
 } from "@/lib/utils";
@@ -169,9 +171,6 @@ export default function SettingsPage() {
                 {t("settings.slug")}
               </label>
               <div className="flex items-center overflow-hidden rounded-2xl border border-royal-100 bg-white focus-within:border-royal-400 focus-within:ring-4 focus-within:ring-royal-200/60">
-                <span className="shrink-0 bg-royal-50 px-3 py-3 text-xs font-bold text-ink-muted">
-                  /shop/
-                </span>
                 <input
                   id="slug"
                   value={draft.slug}
@@ -184,6 +183,9 @@ export default function SettingsPage() {
                   className="w-full border-0 bg-transparent px-3 py-3 text-sm focus:outline-none"
                   dir="ltr"
                 />
+                <span className="shrink-0 bg-royal-50 px-3 py-3 text-xs font-bold text-ink-muted">
+                  .{SHOP_DOMAIN}
+                </span>
               </div>
             </div>
             <div className="sm:col-span-2">
@@ -282,7 +284,7 @@ export default function SettingsPage() {
                     {draft.name || "Your shop"}
                   </p>
                   <p className="truncate text-xs text-white/60">
-                    /shop/{slugify(draft.slug || draft.name) || "your-shop"}
+                    {shopHost(slugify(draft.slug || draft.name) || "your-shop")}
                   </p>
                 </div>
               </div>

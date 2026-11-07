@@ -15,7 +15,7 @@ import {
 import { useAuth } from "@/lib/auth";
 import { useStore } from "@/lib/store";
 import type { PaymentAccounts, PaymentMethod } from "@/lib/types";
-import { PAYMENT_LABELS, cn } from "@/lib/utils";
+import { PAYMENT_LABELS, cn, shopHost } from "@/lib/utils";
 import { useToast } from "@/components/ui";
 
 const METHODS: Array<{ id: PaymentMethod; icon: typeof Truck }> = [
@@ -337,7 +337,7 @@ export default function AdminPage() {
               <div className="flex items-center justify-between gap-3">
                 <span className="font-semibold text-ink-muted">Shop link</span>
                 <span className="truncate font-extrabold text-royal-700">
-                  /shop/{shop.slug}
+                  {shopHost(shop.slug)}
                 </span>
               </div>
             </div>

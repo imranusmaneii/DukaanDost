@@ -274,3 +274,23 @@ export function bestSeller(orders: Order[]): {
 export function totalItems(items: Product[] | Order["items"]): number {
   return items.length;
 }
+
+export const UNLIMITED_STOCK = 999;
+
+export const SHOP_DOMAIN = (
+  process.env.NEXT_PUBLIC_SHOP_DOMAIN || "dukaandost.app"
+)
+  .trim()
+  .toLowerCase();
+
+export function shopHost(slug: string): string {
+  return `${slugify(slug) || "shop"}.${SHOP_DOMAIN}`;
+}
+
+export function shopUrl(slug: string): string {
+  return `https://${shopHost(slug)}`;
+}
+
+export function shopPath(slug: string): string {
+  return `/shop/${slug}`;
+}

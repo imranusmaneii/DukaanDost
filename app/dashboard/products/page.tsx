@@ -18,6 +18,7 @@ import {
   EMOJI_CHOICES,
   PRODUCT_THEMES,
   THEME_KEYS,
+  UNLIMITED_STOCK,
   cn,
   formatMoney,
 } from "@/lib/utils";
@@ -48,7 +49,7 @@ const EMPTY_DRAFT: Draft = {
   theme: "rose",
   imageUrl: null,
   inStock: true,
-  stock: "10",
+  stock: "",
 };
 
 export default function ProductsPage() {
@@ -111,6 +112,10 @@ export default function ProductsPage() {
       setError(t("products.required"));
       return;
     }
+    if (!draft.imageUrl) {
+      setError("Upload a real product photo before saving.");
+      return;
+    }
     const payload = {
       name: draft.name.trim(),
       price,
@@ -119,7 +124,10 @@ export default function ProductsPage() {
       theme: draft.theme,
       imageUrl: draft.imageUrl,
       inStock: draft.inStock,
-      stock: Math.max(0, Number(draft.stock) || 0),
+      stock:
+        draft.stock.trim() === ""
+          ? UNLIMITED_STOCK
+          : Math.max(0, Number(draft.stock) || 0),
     };
     setBusy(true);
     try {
@@ -298,7 +306,9 @@ export default function ProductsPage() {
                 </div>
                 <div className="mt-3 flex items-center justify-between border-t border-royal-100/70 pt-3">
                   <span className="text-[11px] font-semibold text-ink-muted">
-                    {product.stock} {t("products.stockCount")}
+                    {product.stock >= UNLIMITED_STOCK
+                      ? t("products.inStock")
+                      : `${product.stock} ${t("products.stockCount")}`}
                   </span>
                   <button
                     type="button"
@@ -422,7 +432,7 @@ export default function ProductsPage() {
             </div>
             <div>
               <label className="label" htmlFor="product-stock">
-                {t("products.stock")}
+                {t("products.stock")} (optional)
               </label>
               <input
                 id="product-stock"
@@ -432,7 +442,7 @@ export default function ProductsPage() {
                 onChange={(event) =>
                   setDraft((prev) => ({ ...prev, stock: event.target.value }))
                 }
-                placeholder="10"
+                placeholder="Leave blank if unlimited"
                 className="input"
                 dir="ltr"
               />
@@ -462,9 +472,10 @@ export default function ProductsPage() {
             value={draft.imageUrl}
             onChange={(url) => setDraft((prev) => ({ ...prev, imageUrl: url }))}
             folder="products"
-            label="Product photo"
-            hint="Optional. A real photo helps customers decide faster."
+            label="Product photo (required)"
+            hint="Upload a real photo of the product so customers know exactly what they are buying."
             aspect="product"
+            required
             fallback={<span className="text-2xl">{draft.emoji}</span>}
           />
 

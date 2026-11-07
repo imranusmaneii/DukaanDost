@@ -411,7 +411,7 @@ export default function LandingPage() {
               {
                 icon: Link2,
                 title: "Shop setup in minutes",
-                body: "Add your shop name, logo, WhatsApp number and products. Get a shareable link like dukaandost.app/ayesha-bakes.",
+                body: "Add your shop name, logo, WhatsApp number and products. Get a shareable link like ayesha-bakes.dukaandost.app.",
                 tag: "2-minute setup",
               },
               {

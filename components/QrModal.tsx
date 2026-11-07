@@ -98,7 +98,7 @@ export function QrModal({
             </a>
           )}
           <CopyButton
-            path={`/shop/${slug}`}
+            path={url}
             label={t("common.copyLink")}
             copiedLabel={t("common.copied")}
             className="flex-1 justify-center px-4 py-3"

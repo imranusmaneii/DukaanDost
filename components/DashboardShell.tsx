@@ -17,7 +17,7 @@ import {
 } from "lucide-react";
 import { useAuth } from "@/lib/auth";
 import { useStore } from "@/lib/store";
-import { cn } from "@/lib/utils";
+import { cn, shopHost } from "@/lib/utils";
 import {
   AppLoader,
   LangToggle,
@@ -85,7 +85,7 @@ export function DashboardShell({ children }: { children: ReactNode }) {
                 {shop.name}
               </p>
               <p className="truncate text-xs text-ink-muted">
-                dukaandost.app/{shop.slug}
+                {shopHost(shop.slug)}
               </p>
             </div>
           </div>

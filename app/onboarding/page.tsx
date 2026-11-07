@@ -28,8 +28,10 @@ import {
   PAYMENT_LABELS,
   PRODUCT_THEMES,
   THEME_KEYS,
+  UNLIMITED_STOCK,
   cn,
   formatMoney,
+  shopHost,
   slugify,
 } from "@/lib/utils";
 import { ImageUpload } from "@/components/ImageUpload";
@@ -76,9 +78,9 @@ export default function OnboardingPage() {
   const [draftProduct, setDraftProduct] = useState({
     name: "",
     price: "",
-    stock: "10",
+    stock: "",
     description: "",
-    emoji: "🍰",
+    emoji: "🎂",
     theme: "royal",
     imageUrl: null as string | null,
   });
@@ -149,9 +151,16 @@ export default function OnboardingPage() {
 
   function addDraftProduct() {
     const price = Number(draftProduct.price);
-    const stock = Math.max(0, Number(draftProduct.stock) || 0);
+    const stock =
+      draftProduct.stock.trim() === ""
+        ? UNLIMITED_STOCK
+        : Math.max(0, Number(draftProduct.stock) || 0);
     if (!draftProduct.name.trim() || !Number.isFinite(price) || price <= 0) {
       setError("Add a product name and a price above 0.");
+      return;
+    }
+    if (!draftProduct.imageUrl) {
+      setError("Upload a real product photo.");
       return;
     }
     setNewProducts((prev) => [
@@ -171,9 +180,9 @@ export default function OnboardingPage() {
     setDraftProduct({
       name: "",
       price: "",
-      stock: "10",
+      stock: "",
       description: "",
-      emoji: "🍰",
+      emoji: "🎂",
       theme: shopForm.logoColor,
       imageUrl: null,
     });
@@ -543,7 +552,7 @@ export default function OnboardingPage() {
                           stock: event.target.value,
                         }))
                       }
-                      placeholder="Stock"
+                      placeholder="Stock (optional)"
                       type="number"
                       min={0}
                       className="input"
@@ -572,9 +581,10 @@ export default function OnboardingPage() {
                         }))
                       }
                       folder="products"
-                      label="Product photo"
-                      hint="Optional, but products with photos sell better."
+                      label="Product photo (required)"
+                      hint="Upload a real photo of the product. Shops with photos sell more."
                       aspect="product"
+                      required
                       fallback={
                         <span className="text-2xl">{draftProduct.emoji}</span>
                       }
@@ -870,7 +880,7 @@ export default function OnboardingPage() {
                       </p>
                       <p className="mt-1 flex items-center gap-1 text-[11px] font-bold text-royal-700">
                         <Link2 className="h-3 w-3" />
-                        /shop/{previewSlug}
+                        {shopHost(previewSlug)}
                       </p>
                     </div>
                   </div>

@@ -29,6 +29,8 @@ import {
   isThisWeek,
   orderWhatsAppMessage,
   relativeDay,
+  shopHost,
+  shopUrl,
   startOfWeek,
   waLink,
   weekBuckets,
@@ -176,7 +178,7 @@ export default function DashboardPage() {
                 {t("dashboard.shopLink")}
               </p>
               <p className="mt-1 break-all text-sm font-bold text-white/95 sm:text-base">
-                dukaandost.app/shop/{shop.slug}
+                {shopHost(shop.slug)}
               </p>
               <p className="mt-0.5 text-xs text-white/60">
                 {products.length} {t("products.items")} ·{" "}
@@ -188,7 +190,7 @@ export default function DashboardPage() {
             <button
               type="button"
               onClick={async () => {
-                const url = `${window.location.origin}/shop/${shop.slug}`;
+                const url = shopUrl(shop.slug);
                 try {
                   await navigator.clipboard.writeText(url);
                   setCopied(true);
@@ -217,7 +219,7 @@ export default function DashboardPage() {
             <a
               href={waLink(
                 shop.whatsappNumber,
-                `Assalam-o-Alaikum! Check out my online shop ${shop.name}: ${typeof window !== "undefined" ? window.location.origin : ""}/shop/${shop.slug}`,
+                `Assalam-o-Alaikum! Check out my online shop ${shop.name}: ${shopUrl(shop.slug)}`,
               )}
               target="_blank"
               rel="noreferrer"
@@ -526,7 +528,7 @@ export default function DashboardPage() {
       <QrModal
         open={qrOpen}
         onClose={() => setQrOpen(false)}
-        url={`${typeof window !== "undefined" ? window.location.origin : "https://dukaandost.app"}/shop/${shop.slug}`}
+        url={shopUrl(shop.slug)}
         slug={shop.slug}
         shopName={shop.name}
       />

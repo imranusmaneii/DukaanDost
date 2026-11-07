@@ -54,6 +54,7 @@ export function ImageUpload({
   label = "Photo",
   hint = "JPG or PNG. We resize it for fast loading.",
   aspect = "square",
+  required = false,
   fallback,
 }: {
   value?: string | null;
@@ -62,6 +63,7 @@ export function ImageUpload({
   label?: string;
   hint?: string;
   aspect?: "square" | "wide" | "product";
+  required?: boolean;
   fallback?: ReactNode;
 }) {
   const { user } = useAuth();
@@ -69,11 +71,12 @@ export function ImageUpload({
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
 
+  const stacked = aspect === "product";
   const aspectClass =
     aspect === "wide"
       ? "aspect-[16/9] w-full"
       : aspect === "product"
-        ? "aspect-[4/3] w-full"
+        ? "aspect-[16/10] w-full"
         : "h-28 w-28";
 
   async function upload(file: File) {
@@ -104,11 +107,16 @@ export function ImageUpload({
   }
 
   return (
-    <div>
-      <div className="flex items-start gap-3">
+    <div className="min-w-0">
+      <div
+        className={cn(
+          stacked ? "space-y-3" : "flex items-start gap-3",
+        )}
+      >
         <div
           className={cn(
-            "relative shrink-0 overflow-hidden rounded-2xl border border-royal-100 bg-royal-50",
+            "relative overflow-hidden rounded-2xl border border-royal-100 bg-royal-50",
+            !stacked && "shrink-0",
             aspectClass,
           )}
         >
@@ -116,7 +124,7 @@ export function ImageUpload({
             <img
               src={value}
               alt={label}
-              className="h-full w-full object-cover"
+              className="absolute inset-0 h-full w-full object-cover"
             />
           ) : (
             <div className="grid h-full w-full place-items-center text-royal-300">
@@ -130,7 +138,12 @@ export function ImageUpload({
           )}
         </div>
         <div className="min-w-0 flex-1">
-          <p className="text-xs font-extrabold text-ink">{label}</p>
+          <p className="text-xs font-extrabold text-ink">
+            {label}
+            {required && !value && (
+              <span className="ml-1 text-rose-600">*</span>
+            )}
+          </p>
           <p className="mt-0.5 text-[11px] leading-relaxed text-ink-muted">
             {hint}
           </p>
@@ -142,9 +155,9 @@ export function ImageUpload({
               className="btn-soft px-3 py-2 text-xs"
             >
               <Upload className="h-3.5 w-3.5" />
-              {value ? "Replace" : "Upload"}
+              {value ? "Replace" : "Upload photo"}
             </button>
-            {value && (
+            {value && !required && (
               <button
                 type="button"
                 onClick={() => {

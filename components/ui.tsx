@@ -247,7 +247,7 @@ export function Modal({
         role="dialog"
         aria-modal="true"
         className={cn(
-          "animate-pop relative z-10 max-h-[92vh] w-full overflow-y-auto rounded-t-3xl bg-white shadow-2xl sm:rounded-3xl",
+          "animate-pop relative z-10 max-h-[92vh] w-full overflow-x-hidden overflow-y-auto overscroll-contain rounded-t-3xl bg-white shadow-2xl sm:rounded-3xl",
           widths[size],
         )}
       >
@@ -372,8 +372,10 @@ export function CopyButton({
   const { t } = useStore();
 
   async function copy() {
-    const url =
-      typeof window !== "undefined"
+    const isAbsolute = /^https?:\/\//i.test(path);
+    const url = isAbsolute
+      ? path
+      : typeof window !== "undefined"
         ? `${window.location.origin}${path}`
         : path;
     try {

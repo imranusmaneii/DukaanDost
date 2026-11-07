@@ -1,7 +1,26 @@
 import { createServerClient } from "@supabase/ssr";
 import { NextResponse, type NextRequest } from "next/server";
 
+const SHOP_DOMAIN = (
+  process.env.NEXT_PUBLIC_SHOP_DOMAIN || "dukaandost.app"
+).toLowerCase();
+
 export async function middleware(request: NextRequest) {
+  const host = (request.headers.get("host") || "").split(":")[0].toLowerCase();
+  if (host.endsWith(`.${SHOP_DOMAIN}`)) {
+    const subdomain = host.slice(0, -(SHOP_DOMAIN.length + 1));
+    if (
+      subdomain &&
+      subdomain !== "www" &&
+      !subdomain.includes(".") &&
+      request.nextUrl.pathname === "/"
+    ) {
+      const url = request.nextUrl.clone();
+      url.pathname = `/shop/${subdomain}`;
+      return NextResponse.rewrite(url);
+    }
+  }
+
   let response = NextResponse.next({ request });
 
   const supabase = createServerClient(
