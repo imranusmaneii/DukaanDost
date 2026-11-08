@@ -45,7 +45,7 @@ const NAV = [
 
 export default function LandingPage() {
   return (
-    <div className="min-h-screen overflow-x-hidden bg-[#faf7ff]">
+    <div className="min-h-screen overflow-x-clip bg-[#faf7ff]">
       <header className="sticky top-0 z-50 border-b border-royal-100/60 bg-white/80 backdrop-blur-xl">
         <div className="mx-auto flex max-w-6xl items-center justify-between gap-4 px-4 py-3.5 sm:px-6">
           <Link href="/" aria-label="DukaanDost home">
