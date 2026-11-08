@@ -337,3 +337,145 @@ select.input optgroup {
 .bg-white\/90.text-rose-600 {
   color: #fda4af;
 }
+
+/* -------------------------------------------------------------------------
+   Dashboard workspace: white canvas, purple + gold accents.
+   The sidebar keeps the royal-purple night styling; only the content area,
+   mobile header, bottom nav and dashboard dialogs switch to light.
+   ------------------------------------------------------------------------- */
+.dashboard-root {
+  background-color: #faf7ff !important;
+}
+
+:is(.dashboard-light, body.dashboard-mode .dashboard-portal) {
+  color: #1b1230;
+}
+
+:is(.dashboard-light, body.dashboard-mode .dashboard-portal) .bg-white {
+  background-color: #ffffff;
+}
+
+:is(.dashboard-light, body.dashboard-mode .dashboard-portal) .bg-white\/60,
+:is(.dashboard-light, body.dashboard-mode .dashboard-portal) .bg-white\/70,
+:is(.dashboard-light, body.dashboard-mode .dashboard-portal) .bg-white\/80,
+:is(.dashboard-light, body.dashboard-mode .dashboard-portal) .bg-white\/90,
+:is(.dashboard-light, body.dashboard-mode .dashboard-portal) .bg-white\/95 {
+  background-color: rgba(255, 255, 255, 0.94);
+}
+
+:is(.dashboard-light, body.dashboard-mode .dashboard-portal) .bg-royal-50,
+:is(.dashboard-light, body.dashboard-mode .dashboard-portal) .bg-royal-50\/50 {
+  background-color: #f4edff;
+}
+
+:is(.dashboard-light, body.dashboard-mode .dashboard-portal) .bg-royal-50\/40 {
+  background-color: #f8f3ff;
+}
+
+:is(.dashboard-light, body.dashboard-mode .dashboard-portal) .bg-royal-50\/60,
+:is(.dashboard-light, body.dashboard-mode .dashboard-portal) .bg-royal-50\/70 {
+  background-color: #f1e8ff;
+}
+
+:is(.dashboard-light, body.dashboard-mode .dashboard-portal) .bg-royal-100 {
+  background-color: #e9ddff;
+}
+
+:is(.dashboard-light, body.dashboard-mode .dashboard-portal) .bg-royal-100\/50,
+:is(.dashboard-light, body.dashboard-mode .dashboard-portal) .bg-royal-100\/60,
+:is(.dashboard-light, body.dashboard-mode .dashboard-portal) .bg-royal-100\/70 {
+  background-color: #efe6ff;
+}
+
+:is(.dashboard-light, body.dashboard-mode .dashboard-portal) .bg-royal-200 {
+  background-color: #ddccfa;
+}
+
+:is(.dashboard-light, body.dashboard-mode .dashboard-portal) .text-ink {
+  color: #1b1230;
+}
+
+:is(.dashboard-light, body.dashboard-mode .dashboard-portal) .text-ink-soft {
+  color: #4b3b6b;
+}
+
+:is(.dashboard-light, body.dashboard-mode .dashboard-portal) .text-ink-muted {
+  color: #7c6b9b;
+}
+
+:is(.dashboard-light, body.dashboard-mode .dashboard-portal) .text-royal-600,
+:is(.dashboard-light, body.dashboard-mode .dashboard-portal) .text-royal-700,
+:is(.dashboard-light, body.dashboard-mode .dashboard-portal) .text-royal-800,
+:is(.dashboard-light, body.dashboard-mode .dashboard-portal) .text-royal-900 {
+  color: #6b11eb;
+}
+
+:is(.dashboard-light, body.dashboard-mode .dashboard-portal) .border-royal-100,
+:is(.dashboard-light, body.dashboard-mode .dashboard-portal) .border-royal-100\/60,
+:is(.dashboard-light, body.dashboard-mode .dashboard-portal) .border-royal-100\/70,
+:is(.dashboard-light, body.dashboard-mode .dashboard-portal) .border-royal-100\/80 {
+  border-color: #ece2ff;
+}
+
+:is(.dashboard-light, body.dashboard-mode .dashboard-portal) .border-royal-200 {
+  border-color: #ddccfa;
+}
+
+:is(.dashboard-light, body.dashboard-mode .dashboard-portal) .border-royal-300 {
+  border-color: #cbb4f2;
+}
+
+:is(.dashboard-light, body.dashboard-mode .dashboard-portal) .card {
+  background-color: #ffffff;
+  border-color: #ece2ff;
+  box-shadow: 0 20px 45px -32px rgba(43, 16, 88, 0.35);
+}
+
+:is(.dashboard-light, body.dashboard-mode .dashboard-portal) .input {
+  background-color: #ffffff;
+  border-color: #e4d8f7;
+  color: #1b1230;
+}
+
+:is(.dashboard-light, body.dashboard-mode .dashboard-portal) .input::placeholder {
+  color: #a496bd;
+}
+
+:is(.dashboard-light, body.dashboard-mode .dashboard-portal) select.input option,
+:is(.dashboard-light, body.dashboard-mode .dashboard-portal) select.input optgroup {
+  background-color: #ffffff;
+  color: #1b1230;
+}
+
+:is(.dashboard-light, body.dashboard-mode .dashboard-portal) .btn-ghost {
+  background-color: #ffffff;
+  border-color: #e4d8f7;
+  color: #4a0da1;
+}
+
+:is(.dashboard-light, body.dashboard-mode .dashboard-portal) .btn-ghost:hover {
+  background-color: #f4edff;
+  border-color: #cbb4f2;
+}
+
+:is(.dashboard-light, body.dashboard-mode .dashboard-portal) .btn-soft {
+  background-color: #fff2c9;
+  color: #6b4a10;
+}
+
+:is(.dashboard-light, body.dashboard-mode .dashboard-portal) .btn-soft:hover {
+  background-color: #ffe79a;
+}
+
+:is(.dashboard-light, body.dashboard-mode .dashboard-portal) .skeleton {
+  background-color: #efe6ff;
+}
+
+:is(.dashboard-light, body.dashboard-mode .dashboard-portal) .hover\:bg-white:hover {
+  background-color: #f4edff;
+}
+
+:is(.dashboard-light, body.dashboard-mode .dashboard-portal) .hover\:bg-royal-50:hover,
+:is(.dashboard-light, body.dashboard-mode .dashboard-portal) .hover\:bg-royal-100:hover {
+  background-color: #f1e8ff;
+}

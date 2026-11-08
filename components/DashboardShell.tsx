@@ -48,9 +48,14 @@ export function DashboardShell({ children }: { children: ReactNode }) {
     if (hydrated && !hasShop) router.replace("/onboarding");
   }, [hydrated, hasShop, router]);
 
+  useEffect(() => {
+    document.body.classList.add("dashboard-mode");
+    return () => document.body.classList.remove("dashboard-mode");
+  }, []);
+
   if (!hydrated || !hasShop) {
     return (
-      <div className="min-h-screen bg-[#faf7ff]">
+      <div className="dashboard-root dashboard-light min-h-screen bg-[#faf7ff]">
         <div className="mx-auto max-w-6xl px-4 py-10">
           <AppLoader label={t("common.loading")} />
         </div>
@@ -67,7 +72,12 @@ export function DashboardShell({ children }: { children: ReactNode }) {
       .join("") || "DD";
 
   return (
-    <div className={cn("min-h-screen bg-[#faf7ff]", lang === "ur" && "font-urdu")}>
+    <div
+      className={cn(
+        "dashboard-root min-h-screen bg-[#faf7ff]",
+        lang === "ur" && "font-urdu",
+      )}
+    >
       <aside className="fixed inset-y-0 start-0 z-40 hidden w-72 flex-col border-e border-royal-100 bg-white px-5 py-6 lg:flex">
         <Link href="/" className="px-1">
           <Logo />
@@ -184,7 +194,7 @@ export function DashboardShell({ children }: { children: ReactNode }) {
         </div>
       </aside>
 
-      <header className="sticky top-0 z-30 flex items-center justify-between gap-3 border-b border-royal-100 bg-white/90 px-4 py-3 backdrop-blur lg:hidden">
+      <header className="dashboard-light sticky top-0 z-30 flex items-center justify-between gap-3 border-b border-royal-100 bg-white/90 px-4 py-3 backdrop-blur lg:hidden">
         <Link href="/dashboard" className="flex items-center gap-2.5">
           <Logo compact />
           <span className="text-sm font-extrabold text-ink">{shop.name}</span>
@@ -200,13 +210,13 @@ export function DashboardShell({ children }: { children: ReactNode }) {
         </div>
       </header>
 
-      <main className="pb-24 lg:pb-10 lg:ps-72">
+      <main className="dashboard-light pb-24 lg:pb-10 lg:ps-72">
         <div className="mx-auto max-w-6xl px-4 py-6 sm:px-6 lg:px-8 lg:py-9">
           {children}
         </div>
       </main>
 
-      <nav className="fixed inset-x-0 bottom-0 z-40 border-t border-royal-100 bg-white/95 px-2 pb-2 pt-1.5 backdrop-blur lg:hidden">
+      <nav className="dashboard-light fixed inset-x-0 bottom-0 z-40 border-t border-royal-100 bg-white/95 px-2 pb-2 pt-1.5 backdrop-blur lg:hidden">
         <div className="mx-auto flex max-w-md items-stretch justify-between">
           {NAV.map((item) => {
             const active =

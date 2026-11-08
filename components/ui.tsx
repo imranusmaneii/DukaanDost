@@ -236,7 +236,7 @@ export function Modal({
   };
 
   return createPortal(
-    <div className="fixed inset-0 z-[80] flex items-end justify-center sm:items-center">
+    <div className="dashboard-portal fixed inset-0 z-[80] flex items-end justify-center sm:items-center">
       <button
         type="button"
         aria-label="Close"
@@ -316,7 +316,7 @@ export function Drawer({
   if (!open || typeof document === "undefined") return null;
 
   return createPortal(
-    <div className="fixed inset-0 z-[85]">
+    <div className="dashboard-portal fixed inset-0 z-[85]">
       <button
         type="button"
         aria-label="Close"
