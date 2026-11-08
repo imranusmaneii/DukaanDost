@@ -69,6 +69,7 @@ export interface Product {
   emoji: string;
   theme: string;
   imageUrl?: string | null;
+  imageUrls?: string[];
   inStock: boolean;
   stock: number;
   createdAt?: string;
@@ -87,6 +88,7 @@ export interface OrderItem {
   emoji: string;
   theme: string;
   imageUrl?: string | null;
+  imageUrls?: string[];
 }
 
 export interface Order {

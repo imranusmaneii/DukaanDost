@@ -66,7 +66,7 @@ export default function LandingPage() {
             <Link href="/login" className="btn-ghost hidden px-4 py-2.5 sm:inline-flex">
               Sign in
             </Link>
-            <Link href="/login?mode=signup" className="btn-primary px-4 py-2.5">
+            <Link href="/login?switch=1" className="btn-primary px-4 py-2.5">
               Start free
               <ArrowRight className="h-4 w-4" />
             </Link>
@@ -110,7 +110,7 @@ export default function LandingPage() {
             </p>
 
             <div className="mt-7 flex flex-col gap-2.5 sm:flex-row sm:items-center">
-              <Link href="/login?mode=signup" className="btn-gold px-6 py-3.5 text-sm">
+              <Link href="/login?switch=1" className="btn-gold px-6 py-3.5 text-sm">
                 <Sparkles className="h-4 w-4" />
                 Create your shop free
               </Link>
@@ -927,7 +927,7 @@ export default function LandingPage() {
               ))}
             </div>
             <Link
-              href="/login?mode=signup"
+              href="/login?switch=1"
               className="btn-primary mt-6 w-full py-3"
             >
               Create my free shop
@@ -1004,7 +1004,7 @@ export default function LandingPage() {
               download an app. Just one link.
             </p>
             <div className="mt-7 flex flex-col items-center justify-center gap-2.5 sm:flex-row">
-              <Link href="/login?mode=signup" className="btn-gold px-6 py-3.5">
+              <Link href="/login?switch=1" className="btn-gold px-6 py-3.5">
                 Create your shop free
                 <ArrowRight className="h-4 w-4" />
               </Link>
@@ -1064,7 +1064,7 @@ export default function LandingPage() {
               </p>
               <div className="mt-3 space-y-2">
                 {[
-                  { label: "Create a shop", href: "/login?mode=signup" },
+                  { label: "Create a shop", href: "/login?switch=1" },
                   { label: "Open dashboard", href: "/dashboard" },
                   { label: "Sign in", href: "/login" },
                   { label: "Settings", href: "/dashboard/settings" },

@@ -65,7 +65,7 @@ export default function ShopsDirectoryPage() {
               Sign in
             </Link>
             <Link
-              href="/login?mode=signup"
+              href="/login?switch=1"
               className="btn-primary px-3.5 py-2 text-xs"
             >
               Create shop
@@ -92,7 +92,7 @@ export default function ShopsDirectoryPage() {
           </p>
           <div className="mt-6 flex flex-col gap-2 sm:flex-row">
             <Link
-              href="/login?mode=signup"
+              href="/login?switch=1"
               className="btn-gold justify-center px-5 py-3"
             >
               Open your own shop
@@ -159,7 +159,7 @@ export default function ShopsDirectoryPage() {
             </p>
             {shops.length === 0 && (
               <Link
-                href="/login?mode=signup"
+                href="/login?switch=1"
                 className="btn-primary mt-4 px-4 py-2.5"
               >
                 Create your shop

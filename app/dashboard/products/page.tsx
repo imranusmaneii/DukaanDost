@@ -22,7 +22,7 @@ import {
   cn,
   formatMoney,
 } from "@/lib/utils";
-import { ImageUpload } from "@/components/ImageUpload";
+import { MultiImageUpload } from "@/components/ImageUpload";
 import {
   EmptyState,
   Modal,
@@ -36,7 +36,7 @@ interface Draft {
   description: string;
   emoji: string;
   theme: string;
-  imageUrl: string | null;
+  imageUrls: string[];
   inStock: boolean;
   stock: string;
 }
@@ -47,7 +47,7 @@ const EMPTY_DRAFT: Draft = {
   description: "",
   emoji: "🎂",
   theme: "rose",
-  imageUrl: null,
+  imageUrls: [],
   inStock: true,
   stock: "",
 };
@@ -98,7 +98,12 @@ export default function ProductsPage() {
       description: product.description,
       emoji: product.emoji,
       theme: product.theme,
-      imageUrl: product.imageUrl ?? null,
+      imageUrls:
+        product.imageUrls && product.imageUrls.length > 0
+          ? product.imageUrls
+          : product.imageUrl
+            ? [product.imageUrl]
+            : [],
       inStock: product.inStock,
       stock: String(product.stock),
     });
@@ -112,8 +117,8 @@ export default function ProductsPage() {
       setError(t("products.required"));
       return;
     }
-    if (!draft.imageUrl) {
-      setError("Upload a real product photo before saving.");
+    if (draft.imageUrls.length === 0) {
+      setError("Upload at least one real product photo before saving.");
       return;
     }
     const payload = {
@@ -122,7 +127,8 @@ export default function ProductsPage() {
       description: draft.description.trim(),
       emoji: draft.emoji,
       theme: draft.theme,
-      imageUrl: draft.imageUrl,
+      imageUrl: draft.imageUrls[0] ?? null,
+      imageUrls: draft.imageUrls,
       inStock: draft.inStock,
       stock:
         draft.stock.trim() === ""
@@ -259,6 +265,11 @@ export default function ProductsPage() {
                     {product.emoji}
                   </span>
                 )}
+                {(product.imageUrls?.length ?? 0) > 1 && (
+                  <span className="absolute bottom-3 left-3 rounded-full bg-ink/60 px-2 py-0.5 text-[10px] font-extrabold text-white backdrop-blur">
+                    {product.imageUrls?.length} photos
+                  </span>
+                )}
                 <span
                   className={cn(
                     "absolute left-3 top-3 rounded-full px-2.5 py-1 text-[10px] font-extrabold",
@@ -374,9 +385,9 @@ export default function ProductsPage() {
                   PRODUCT_THEMES.royal.tile,
               )}
             >
-              {draft.imageUrl ? (
+              {draft.imageUrls[0] ? (
                 <img
-                  src={draft.imageUrl}
+                  src={draft.imageUrls[0]}
                   alt=""
                   className="absolute inset-0 h-full w-full object-cover"
                 />
@@ -468,13 +479,14 @@ export default function ProductsPage() {
             />
           </div>
 
-          <ImageUpload
-            value={draft.imageUrl}
-            onChange={(url) => setDraft((prev) => ({ ...prev, imageUrl: url }))}
+          <MultiImageUpload
+            values={draft.imageUrls}
+            onChange={(urls) =>
+              setDraft((prev) => ({ ...prev, imageUrls: urls }))
+            }
             folder="products"
-            label="Product photo (required)"
-            hint="Upload a real photo of the product so customers know exactly what they are buying."
-            aspect="product"
+            label="Product photos (required)"
+            hint="Add up to 6 real photos. The first photo is the cover customers see."
             required
             fallback={<span className="text-2xl">{draft.emoji}</span>}
           />

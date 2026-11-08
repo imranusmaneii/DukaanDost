@@ -55,6 +55,11 @@ function mapShop(row: Row, ownerName = ""): Shop {
 }
 
 function mapProduct(row: Row): Product {
+  const stored = Array.isArray(row.image_urls)
+    ? (row.image_urls as string[]).filter(Boolean)
+    : [];
+  const imageUrls =
+    stored.length > 0 ? stored : row.image_url ? [row.image_url as string] : [];
   return {
     id: row.id,
     shopId: row.shop_id,
@@ -63,7 +68,8 @@ function mapProduct(row: Row): Product {
     description: row.description ?? "",
     emoji: row.emoji ?? "🛍️",
     theme: row.theme ?? "royal",
-    imageUrl: row.image_url ?? null,
+    imageUrl: imageUrls[0] ?? null,
+    imageUrls,
     inStock: row.in_stock ?? true,
     stock: Number(row.stock ?? 0),
     createdAt: row.created_at,
@@ -285,7 +291,12 @@ function productRow(patch: Partial<Product>): Row {
   if (patch.description !== undefined) row.description = patch.description;
   if (patch.emoji !== undefined) row.emoji = patch.emoji;
   if (patch.theme !== undefined) row.theme = patch.theme;
-  if (patch.imageUrl !== undefined) row.image_url = patch.imageUrl;
+  if (patch.imageUrls !== undefined) {
+    row.image_urls = patch.imageUrls;
+    row.image_url = patch.imageUrls[0] ?? null;
+  } else if (patch.imageUrl !== undefined) {
+    row.image_url = patch.imageUrl;
+  }
   if (patch.inStock !== undefined) row.in_stock = patch.inStock;
   if (patch.stock !== undefined) row.stock = patch.stock;
   return row;

@@ -34,6 +34,7 @@ import {
   themeTile,
   waLink,
 } from "@/lib/utils";
+import { ProductGallery } from "@/components/ProductGallery";
 import {
   AppLoader,
   Drawer,
@@ -470,21 +471,22 @@ export default function StorefrontPage() {
                 >
                   <div
                     className={cn(
-                      "relative grid h-44 place-items-center overflow-hidden",
+                      "relative h-44 place-items-center overflow-hidden",
                       themeTile(product.theme),
                     )}
                   >
-                    {product.imageUrl ? (
-                      <img
-                        src={product.imageUrl}
-                        alt={product.name}
-                        className="absolute inset-0 h-full w-full object-cover transition duration-300 group-hover:scale-105"
-                      />
-                    ) : (
-                      <span className="text-6xl drop-shadow-md transition duration-300 group-hover:scale-110">
-                        {product.emoji}
-                      </span>
-                    )}
+                    <ProductGallery
+                      images={
+                        product.imageUrls && product.imageUrls.length > 0
+                          ? product.imageUrls
+                          : product.imageUrl
+                            ? [product.imageUrl]
+                            : []
+                      }
+                      emoji={product.emoji}
+                      theme={product.theme}
+                      name={product.name}
+                    />
                     {!product.inStock && (
                       <div className="absolute inset-0 grid place-items-center bg-ink/55 backdrop-blur-[2px]">
                         <span className="rounded-full bg-white px-3 py-1.5 text-xs font-extrabold text-rose-700">
@@ -640,7 +642,7 @@ export default function StorefrontPage() {
             </span>
           </div>
           <Link
-            href="/login?mode=signup"
+            href="/login?switch=1"
             className="flex items-center gap-1 text-xs font-extrabold text-royal-700 hover:underline"
           >
             Create your own shop

@@ -34,7 +34,7 @@ import {
   shopHost,
   slugify,
 } from "@/lib/utils";
-import { ImageUpload } from "@/components/ImageUpload";
+import { ImageUpload, MultiImageUpload } from "@/components/ImageUpload";
 import { Logo, ShopAvatar } from "@/components/ui";
 
 const STEPS = ["Shop details", "Products", "Payments", "Publish"];
@@ -82,7 +82,7 @@ export default function OnboardingPage() {
     description: "",
     emoji: "🎂",
     theme: "royal",
-    imageUrl: null as string | null,
+    imageUrls: [] as string[],
   });
   const [newProducts, setNewProducts] = useState<Product[]>([]);
 
@@ -159,8 +159,8 @@ export default function OnboardingPage() {
       setError("Add a product name and a price above 0.");
       return;
     }
-    if (!draftProduct.imageUrl) {
-      setError("Upload a real product photo.");
+    if (draftProduct.imageUrls.length === 0) {
+      setError("Upload at least one real product photo.");
       return;
     }
     setNewProducts((prev) => [
@@ -172,7 +172,8 @@ export default function OnboardingPage() {
         description: draftProduct.description.trim(),
         emoji: draftProduct.emoji,
         theme: draftProduct.theme,
-        imageUrl: draftProduct.imageUrl,
+        imageUrl: draftProduct.imageUrls[0] ?? null,
+        imageUrls: draftProduct.imageUrls,
         inStock: stock > 0,
         stock,
       },
@@ -184,7 +185,7 @@ export default function OnboardingPage() {
       description: "",
       emoji: "🎂",
       theme: shopForm.logoColor,
-      imageUrl: null,
+      imageUrls: [],
     });
     setError("");
   }
@@ -234,6 +235,7 @@ export default function OnboardingPage() {
           emoji: product.emoji,
           theme: product.theme,
           imageUrl: product.imageUrl,
+          imageUrls: product.imageUrls,
           inStock: product.inStock,
           stock: product.stock,
         });
@@ -572,18 +574,17 @@ export default function OnboardingPage() {
                     className="input mt-2 resize-none"
                   />
                   <div className="mt-2">
-                    <ImageUpload
-                      value={draftProduct.imageUrl}
-                      onChange={(url) =>
+                    <MultiImageUpload
+                      values={draftProduct.imageUrls}
+                      onChange={(urls) =>
                         setDraftProduct((prev) => ({
                           ...prev,
-                          imageUrl: url,
+                          imageUrls: urls,
                         }))
                       }
                       folder="products"
-                      label="Product photo (required)"
-                      hint="Upload a real photo of the product. Shops with photos sell more."
-                      aspect="product"
+                      label="Product photos (required)"
+                      hint="Add up to 6 real photos. The first one is the cover customers see."
                       required
                       fallback={
                         <span className="text-2xl">{draftProduct.emoji}</span>

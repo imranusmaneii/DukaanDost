@@ -60,7 +60,9 @@ export async function middleware(request: NextRequest) {
     return NextResponse.redirect(url);
   }
 
-  if (user && path === "/login") {
+  const forceSignin = request.nextUrl.searchParams.get("switch") === "1";
+
+  if (user && path === "/login" && !forceSignin) {
     const url = request.nextUrl.clone();
     url.pathname = "/dashboard";
     url.search = "";

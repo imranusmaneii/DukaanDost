@@ -77,13 +77,13 @@ body {
 
 .bg-mesh {
   background-image:
-    radial-gradient(at 8% 0%, rgba(124, 34, 255, 0.14) 0px, transparent 50%),
-    radial-gradient(at 95% 4%, rgba(255, 201, 60, 0.18) 0px, transparent 45%),
-    radial-gradient(at 50% 100%, rgba(124, 34, 255, 0.08) 0px, transparent 55%);
+    radial-gradient(at 8% 0%, rgba(124, 34, 255, 0.32) 0px, transparent 50%),
+    radial-gradient(at 95% 4%, rgba(255, 201, 60, 0.12) 0px, transparent 45%),
+    radial-gradient(at 50% 100%, rgba(89, 14, 197, 0.26) 0px, transparent 55%);
 }
 
 .bg-dots {
-  background-image: radial-gradient(rgba(89, 14, 197, 0.16) 1px, transparent 1px);
+  background-image: radial-gradient(rgba(255, 201, 60, 0.16) 1px, transparent 1px);
   background-size: 22px 22px;
 }
 
@@ -139,4 +139,201 @@ body {
   .no-print {
     display: none !important;
   }
+}
+
+/* -------------------------------------------------------------------------
+   Royal purple night canvas
+   Deep purple is the base everywhere; white and sun-gold are accents only.
+   These unlayered rules intentionally sit after Tailwind so light utility
+   surfaces (bg-white, bg-royal-50, etc.) inherit the theme automatically.
+   ------------------------------------------------------------------------- */
+html {
+  background-color: #100324;
+}
+
+body {
+  background-color: #140428 !important;
+  background-image:
+    radial-gradient(at 10% 0%, rgba(124, 34, 255, 0.34) 0px, transparent 52%),
+    radial-gradient(at 96% 4%, rgba(245, 179, 1, 0.1) 0px, transparent 42%),
+    radial-gradient(at 50% 100%, rgba(89, 14, 197, 0.24) 0px, transparent 58%);
+  background-attachment: fixed;
+  color: #f7f4ff;
+}
+
+.bg-\[\#faf7ff\] {
+  background-color: transparent !important;
+}
+
+.bg-white {
+  background-color: #23084a;
+}
+
+.bg-white\/60,
+.bg-white\/70,
+.bg-white\/80,
+.bg-white\/90,
+.bg-white\/95 {
+  background-color: rgba(35, 8, 74, 0.88);
+}
+
+.bg-royal-50,
+.bg-royal-50\/50 {
+  background-color: rgba(124, 34, 255, 0.16);
+}
+
+.bg-royal-50\/40 {
+  background-color: rgba(124, 34, 255, 0.1);
+}
+
+.bg-royal-50\/60,
+.bg-royal-50\/70 {
+  background-color: rgba(124, 34, 255, 0.14);
+}
+
+.bg-royal-100 {
+  background-color: rgba(124, 34, 255, 0.26);
+}
+
+.bg-royal-100\/50,
+.bg-royal-100\/60,
+.bg-royal-100\/70 {
+  background-color: rgba(124, 34, 255, 0.2);
+}
+
+.bg-royal-200 {
+  background-color: #481b89;
+}
+
+.text-ink {
+  color: #f7f4ff;
+}
+
+.text-ink-soft {
+  color: #e4daff;
+}
+
+.text-ink-muted {
+  color: #c0b1e2;
+}
+
+.text-royal-600 {
+  color: #d8b45a;
+}
+
+.text-royal-700,
+.text-royal-800,
+.text-royal-900 {
+  color: #ffc93c;
+}
+
+.border-royal-100,
+.border-royal-100\/60,
+.border-royal-100\/70,
+.border-royal-100\/80 {
+  border-color: rgba(196, 166, 255, 0.16);
+}
+
+.border-royal-200 {
+  border-color: rgba(196, 166, 255, 0.28);
+}
+
+.border-royal-300 {
+  border-color: rgba(196, 166, 255, 0.4);
+}
+
+.card {
+  background-color: #23084a;
+  border-color: rgba(196, 166, 255, 0.16);
+  box-shadow: 0 24px 55px -30px rgba(0, 0, 0, 0.85);
+}
+
+.input {
+  background-color: #1a0638;
+  border-color: rgba(196, 166, 255, 0.2);
+  color: #f7f4ff;
+}
+
+.input::placeholder {
+  color: #8f7cb8;
+}
+
+select.input option,
+select.input optgroup {
+  background-color: #1a0638;
+  color: #f7f4ff;
+}
+
+.btn-ghost {
+  background-color: rgba(255, 255, 255, 0.06);
+  border-color: rgba(196, 166, 255, 0.22);
+  color: #f4efff;
+}
+
+.btn-ghost:hover {
+  background-color: rgba(255, 255, 255, 0.12);
+  border-color: rgba(196, 166, 255, 0.42);
+}
+
+.btn-soft {
+  background-color: rgba(245, 179, 1, 0.16);
+  color: #ffe088;
+}
+
+.btn-soft:hover {
+  background-color: rgba(245, 179, 1, 0.24);
+}
+
+.skeleton {
+  background-color: rgba(124, 34, 255, 0.18);
+}
+
+.hover\:bg-white:hover {
+  background-color: #2d0b5e;
+}
+
+/* Keep the few intentionally light surfaces readable. */
+.bg-gold-50 .text-ink,
+.bg-gold-50\/60 .text-ink {
+  color: #2b1600;
+}
+
+.bg-gold-50 .text-ink-soft,
+.bg-gold-50\/60 .text-ink-soft {
+  color: #4a3208;
+}
+
+.bg-gold-50 .text-ink-muted,
+.bg-gold-50\/60 .text-ink-muted {
+  color: #6b4a10;
+}
+
+.bg-gold-50 .text-royal-700,
+.bg-gold-50\/60 .text-royal-700 {
+  color: #6b11eb;
+}
+
+.bg-gold-50 .text-royal-900,
+.bg-gold-50\/60 .text-royal-900 {
+  color: #4a0da1;
+}
+
+.bg-\[\#dcf8c6\] .text-ink {
+  color: #10230a;
+}
+
+.bg-\[\#dcf8c6\] .text-ink-muted {
+  color: #4a5a3a;
+}
+
+.bg-\[\#dcf8c6\] .text-royal-700 {
+  color: #4a0da1;
+}
+
+.bg-white\/90.text-emerald-700 {
+  color: #6ee7b7;
+}
+
+.bg-white\/90.text-rose-600 {
+  color: #fda4af;
 }
