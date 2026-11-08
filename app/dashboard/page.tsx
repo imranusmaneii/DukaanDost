@@ -270,7 +270,7 @@ export default function DashboardPage() {
 
       <div className="grid gap-5 lg:grid-cols-3 lg:gap-6">
         <div className="card p-5 sm:p-6 lg:col-span-2">
-          <div className="flex flex-wrap items-start justify-between gap-3">
+          <div className="flex flex-wrap items-start justify-between gap-3 border-b border-royal-100/70 pb-4">
             <div>
               <h2 className="text-[15px] font-extrabold tracking-tight text-ink">
                 {t("dashboard.weeklyEarnings")}
@@ -297,7 +297,7 @@ export default function DashboardPage() {
               return (
                 <div
                   key={bucket.iso}
-                  className="group flex h-full flex-1 flex-col items-center justify-end gap-2"
+                  className="group flex h-full flex-1 flex-col items-center justify-end gap-2 border-l border-royal-100/60 pl-2 first:border-l-0 first:pl-0"
                 >
                   <span
                     className={cn(
@@ -343,32 +343,36 @@ export default function DashboardPage() {
               </h2>
               <Crown className="h-4 w-4 text-gold-500" />
             </div>
-            <div className="flex items-center gap-4 px-5 py-5 sm:px-6">
-              {stats.bestProduct ? (
-                <>
-                  <ShopAvatar
-                    emoji={stats.bestProduct.emoji}
-                    theme={stats.bestProduct.theme}
-                    imageUrl={stats.bestProduct.imageUrl}
-                    size="lg"
-                  />
-                  <div className="min-w-0">
-                    <p className="truncate text-sm font-extrabold text-ink">
-                      {stats.bestProduct.name}
-                    </p>
-                    <p className="mt-0.5 text-xs text-ink-muted">
-                      {stats.best?.units} {t("dashboard.unitsSold")}
-                    </p>
-                    <p className="mt-1 text-sm font-extrabold text-royal-700">
-                      <span dir="ltr">
-                        {formatMoney(stats.bestProduct.price)}
-                      </span>
-                    </p>
-                  </div>
-                </>
-              ) : (
-                <p className="text-sm text-ink-muted">{t("dashboard.noOrders")}</p>
-              )}
+            <div className="p-3 sm:p-4">
+              <div className="flex items-center gap-4 rounded-2xl border border-royal-100/80 bg-royal-50/30 p-4">
+                {stats.bestProduct ? (
+                  <>
+                    <ShopAvatar
+                      emoji={stats.bestProduct.emoji}
+                      theme={stats.bestProduct.theme}
+                      imageUrl={stats.bestProduct.imageUrl}
+                      size="lg"
+                    />
+                    <div className="min-w-0">
+                      <p className="truncate text-sm font-extrabold text-ink">
+                        {stats.bestProduct.name}
+                      </p>
+                      <p className="mt-0.5 text-xs text-ink-muted">
+                        {stats.best?.units} {t("dashboard.unitsSold")}
+                      </p>
+                      <p className="mt-1 text-sm font-extrabold text-royal-700">
+                        <span dir="ltr">
+                          {formatMoney(stats.bestProduct.price)}
+                        </span>
+                      </p>
+                    </div>
+                  </>
+                ) : (
+                  <p className="text-sm text-ink-muted">
+                    {t("dashboard.noOrders")}
+                  </p>
+                )}
+              </div>
             </div>
           </div>
 
@@ -395,11 +399,11 @@ export default function DashboardPage() {
                 </p>
               </div>
             ) : (
-              <ul className="divide-y divide-royal-100/60">
+              <ul className="space-y-2.5 p-3 sm:p-4">
                 {stats.pendingOrders.slice(0, 3).map((order) => (
                   <li
                     key={order.id}
-                    className="flex items-center gap-3 px-5 py-3.5 sm:px-6"
+                    className="flex items-center gap-3 rounded-2xl border border-royal-100/80 bg-royal-50/30 px-3.5 py-3"
                   >
                     <span className="grid h-9 w-9 shrink-0 place-items-center rounded-full bg-gold-100 text-xs font-extrabold text-gold-800">
                       {order.customerName
@@ -457,13 +461,13 @@ export default function DashboardPage() {
             {t("dashboard.noOrders")}
           </p>
         ) : (
-          <ul className="divide-y divide-royal-100/60">
+          <ul className="space-y-2.5 p-3 sm:p-4">
             {recentOrders.map((order) => {
               const qty = order.items.reduce((sum, item) => sum + item.qty, 0);
               return (
                 <li
                   key={order.id}
-                  className="flex flex-col gap-3 px-5 py-4 transition hover:bg-royal-50/40 sm:flex-row sm:items-center sm:px-6"
+                  className="flex flex-col gap-3 rounded-2xl border border-royal-100/80 bg-white px-4 py-4 transition hover:border-royal-200 hover:bg-royal-50/30 sm:flex-row sm:items-center"
                 >
                   <div className="flex min-w-0 flex-1 items-center gap-3">
                     <span className="grid h-10 w-10 shrink-0 place-items-center rounded-2xl bg-royal-50 text-xs font-extrabold text-royal-800">
@@ -587,16 +591,18 @@ function StatCard({
           </span>
         )}
       </div>
-      <p className="mt-4 text-xs font-bold uppercase tracking-wide text-ink-muted">
-        {label}
-      </p>
-      <p
-        className="mt-1 text-2xl font-extrabold tracking-tight text-ink sm:text-[1.7rem]"
-        dir="ltr"
-      >
-        {value}
-      </p>
-      <p className="mt-1.5 text-xs font-semibold text-ink-muted">{hint}</p>
+      <div className="mt-4 border-t border-royal-100/80 pt-3.5">
+        <p className="text-xs font-bold uppercase tracking-wide text-ink-muted">
+          {label}
+        </p>
+        <p
+          className="mt-1 text-2xl font-extrabold tracking-tight text-ink sm:text-[1.7rem]"
+          dir="ltr"
+        >
+          {value}
+        </p>
+        <p className="mt-1.5 text-xs font-semibold text-ink-muted">{hint}</p>
+      </div>
     </div>
   );
 }
