@@ -81,7 +81,7 @@ export default function LandingPage() {
 
         <div className="relative mx-auto grid max-w-6xl items-center gap-10 px-4 pb-14 pt-12 sm:px-6 sm:pb-20 sm:pt-16 lg:grid-cols-[1.08fr_0.92fr] lg:gap-6">
           <div className="animate-fade-up">
-            <SectionLabel>GDG Kolachi · SME & Startup Enablement</SectionLabel>
+            <SectionLabel>Built for Pakistan&apos;s home businesses</SectionLabel>
             <h1 className="mt-4 max-w-xl text-balance text-4xl font-extrabold leading-[1.06] tracking-tight text-ink sm:text-5xl lg:text-[3.4rem]">
               Your shop, your orders, your earnings —{" "}
               <span className="relative whitespace-nowrap text-royal-700">
@@ -1084,9 +1084,9 @@ export default function LandingPage() {
                 Built for
               </p>
               <p className="mt-3 text-xs leading-relaxed text-ink-muted">
-                GDG Kolachi Hackathon
+                Small businesses
                 <br />
-                SME & Startup Enablement
+                across Pakistan
               </p>
               <div className="mt-3 flex flex-wrap gap-1.5">
                 <span className="chip bg-royal-50 text-royal-700">React</span>
@@ -1099,7 +1099,7 @@ export default function LandingPage() {
           </div>
           <div className="mt-8 flex flex-col items-center justify-between gap-2 border-t border-royal-100 pt-5 sm:flex-row">
             <p className="text-[11px] font-semibold text-ink-muted">
-              © 2026 DukaanDost. A hackathon prototype.
+              © 2026 DukaanDost. All rights reserved.
             </p>
             <p className="text-[11px] font-semibold text-ink-muted">
               Made with royal purple and sun gold in Karachi.
