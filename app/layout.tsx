@@ -1,5 +1,6 @@
 import type { Metadata, Viewport } from "next";
 import "./globals.css";
+import "./landing.css";
 import { AuthProvider } from "@/lib/auth";
 import { StoreProvider } from "@/lib/store";
 
