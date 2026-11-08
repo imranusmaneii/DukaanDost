@@ -131,17 +131,17 @@ export default function DashboardPage() {
   if (!hydrated) return null;
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-7">
       <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
         <div>
-          <p className="text-[11px] font-extrabold uppercase tracking-[0.18em] text-royal-600">
+          <p className="text-xs font-extrabold uppercase tracking-[0.16em] text-royal-600">
             {t("dashboard.thisWeek")} · {weekRange}
           </p>
-          <h1 className="mt-1.5 text-2xl font-extrabold tracking-tight text-ink sm:text-[2rem]">
+          <h1 className="mt-2 text-2xl font-extrabold tracking-tight text-ink sm:text-[2rem]">
             {t("dashboard.greeting")}, {firstName}
             <span className="ml-1">👋</span>
           </h1>
-          <p className="mt-1 text-sm text-ink-muted">{t("dashboard.subtitle")}</p>
+          <p className="mt-1.5 text-sm text-ink-muted">{t("dashboard.subtitle")}</p>
         </div>
         <div className="flex flex-wrap items-center gap-2">
           <Link
@@ -161,7 +161,7 @@ export default function DashboardPage() {
         </div>
       </div>
 
-      <div className="relative overflow-hidden rounded-3xl bg-royal-radial p-5 text-white shadow-glow sm:p-6">
+      <div className="relative overflow-hidden rounded-3xl bg-royal-radial p-6 text-white shadow-glow sm:p-7">
         <div className="pointer-events-none absolute -right-10 -top-16 h-48 w-48 rounded-full bg-gold-300/20 blur-2xl" />
         <div className="pointer-events-none absolute -bottom-24 left-1/3 h-48 w-48 rounded-full bg-white/10 blur-2xl" />
         <div className="relative flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
@@ -232,7 +232,7 @@ export default function DashboardPage() {
         </div>
       </div>
 
-      <div className="grid grid-cols-2 gap-3 sm:gap-4 lg:grid-cols-4">
+      <div className="grid grid-cols-2 gap-4 lg:grid-cols-4 lg:gap-5">
         <StatCard
           label={t("dashboard.earningsWeek")}
           value={formatMoney(stats.earnings)}
@@ -268,14 +268,14 @@ export default function DashboardPage() {
         />
       </div>
 
-      <div className="grid gap-4 lg:grid-cols-3">
+      <div className="grid gap-5 lg:grid-cols-3 lg:gap-6">
         <div className="card p-5 sm:p-6 lg:col-span-2">
           <div className="flex flex-wrap items-start justify-between gap-3">
             <div>
-              <h2 className="text-base font-extrabold text-ink">
+              <h2 className="text-[15px] font-extrabold tracking-tight text-ink">
                 {t("dashboard.weeklyEarnings")}
               </h2>
-              <p className="mt-0.5 text-xs text-ink-muted">
+              <p className="mt-1 text-xs text-ink-muted">
                 {t("dashboard.earned")} · {weekRange}
               </p>
             </div>
@@ -286,7 +286,7 @@ export default function DashboardPage() {
           </div>
           <div
             dir="ltr"
-            className="mt-6 flex h-44 items-end justify-between gap-2 sm:gap-3"
+            className="mt-7 flex h-44 items-end justify-between gap-2 sm:gap-3"
           >
             {buckets.map((bucket, index) => {
               const height = Math.max(
@@ -301,7 +301,7 @@ export default function DashboardPage() {
                 >
                   <span
                     className={cn(
-                      "text-[10px] font-extrabold transition",
+                      "text-[11px] font-extrabold transition",
                       bucket.total > 0
                         ? "text-royal-800"
                         : "text-ink-muted/50",
@@ -323,7 +323,7 @@ export default function DashboardPage() {
                   </div>
                   <span
                     className={cn(
-                      "text-[10px] font-bold",
+                      "text-[11px] font-bold",
                       isToday ? "text-royal-900" : "text-ink-muted",
                     )}
                   >
@@ -335,15 +335,15 @@ export default function DashboardPage() {
           </div>
         </div>
 
-        <div className="space-y-4">
+        <div className="space-y-5">
           <div className="card overflow-hidden">
-            <div className="flex items-center justify-between border-b border-royal-100/70 px-5 py-4">
-              <h2 className="text-sm font-extrabold text-ink">
+            <div className="flex items-center justify-between border-b border-royal-100/70 px-5 py-4 sm:px-6">
+              <h2 className="text-[15px] font-extrabold tracking-tight text-ink">
                 {t("dashboard.bestSeller")}
               </h2>
               <Crown className="h-4 w-4 text-gold-500" />
             </div>
-            <div className="flex items-center gap-3.5 px-5 py-5">
+            <div className="flex items-center gap-4 px-5 py-5 sm:px-6">
               {stats.bestProduct ? (
                 <>
                   <ShopAvatar
@@ -373,8 +373,8 @@ export default function DashboardPage() {
           </div>
 
           <div className="card overflow-hidden">
-            <div className="flex items-center justify-between border-b border-royal-100/70 px-5 py-4">
-              <h2 className="text-sm font-extrabold text-ink">
+            <div className="flex items-center justify-between border-b border-royal-100/70 px-5 py-4 sm:px-6">
+              <h2 className="text-[15px] font-extrabold tracking-tight text-ink">
                 {t("dashboard.pendingPayments")}
               </h2>
               <Link
@@ -385,7 +385,7 @@ export default function DashboardPage() {
               </Link>
             </div>
             {stats.pendingOrders.length === 0 ? (
-              <div className="px-5 py-8 text-center">
+              <div className="px-6 py-9 text-center">
                 <BadgeCheck className="mx-auto h-8 w-8 text-emerald-500" />
                 <p className="mt-2 text-sm font-bold text-ink">
                   {t("dashboard.allSettled")}
@@ -399,7 +399,7 @@ export default function DashboardPage() {
                 {stats.pendingOrders.slice(0, 3).map((order) => (
                   <li
                     key={order.id}
-                    className="flex items-center gap-3 px-5 py-3"
+                    className="flex items-center gap-3 px-5 py-3.5 sm:px-6"
                   >
                     <span className="grid h-9 w-9 shrink-0 place-items-center rounded-full bg-gold-100 text-xs font-extrabold text-gold-800">
                       {order.customerName
@@ -421,7 +421,7 @@ export default function DashboardPage() {
                       <button
                         type="button"
                         onClick={() => setPaymentStatus(order.id, "paid")}
-                        className="rounded-full bg-emerald-50 px-2.5 py-1 text-[10px] font-extrabold text-emerald-700 transition hover:bg-emerald-100"
+                        className="rounded-full bg-emerald-50 px-2.5 py-1 text-[11px] font-extrabold text-emerald-700 transition hover:bg-emerald-100"
                       >
                         {t("dashboard.markPaid")}
                       </button>
@@ -435,12 +435,12 @@ export default function DashboardPage() {
       </div>
 
       <div className="card overflow-hidden">
-        <div className="flex items-center justify-between border-b border-royal-100/70 px-5 py-4 sm:px-6">
+        <div className="flex items-center justify-between gap-4 border-b border-royal-100/70 px-5 py-4 sm:px-6">
           <div>
-            <h2 className="text-base font-extrabold text-ink">
+            <h2 className="text-[15px] font-extrabold tracking-tight text-ink">
               {t("dashboard.recentOrders")}
             </h2>
-            <p className="text-xs text-ink-muted">
+            <p className="mt-1 text-xs text-ink-muted">
               {t("dashboard.ordersWeek")}: {stats.weekOrders.length}
             </p>
           </div>
@@ -559,11 +559,11 @@ function StatCard({
   };
   const showTrend = typeof trend === "number" && trend !== 0;
   return (
-    <div className="card p-4 sm:p-5">
+    <div className="card p-5 sm:p-6">
       <div className="flex items-start justify-between gap-2">
         <span
           className={cn(
-            "grid h-9 w-9 place-items-center rounded-xl sm:h-10 sm:w-10",
+            "grid h-10 w-10 place-items-center rounded-xl",
             tones[tone],
           )}
         >
@@ -587,16 +587,16 @@ function StatCard({
           </span>
         )}
       </div>
-      <p className="mt-3 text-[11px] font-bold uppercase tracking-wide text-ink-muted">
+      <p className="mt-4 text-xs font-bold uppercase tracking-wide text-ink-muted">
         {label}
       </p>
       <p
-        className="mt-0.5 text-xl font-extrabold tracking-tight text-ink sm:text-2xl"
+        className="mt-1 text-2xl font-extrabold tracking-tight text-ink sm:text-[1.7rem]"
         dir="ltr"
       >
         {value}
       </p>
-      <p className="mt-1 text-[11px] font-semibold text-ink-muted">{hint}</p>
+      <p className="mt-1.5 text-xs font-semibold text-ink-muted">{hint}</p>
     </div>
   );
 }

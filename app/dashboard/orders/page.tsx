@@ -88,23 +88,23 @@ export default function OrdersPage() {
   if (!hydrated) return null;
 
   return (
-    <div className="space-y-5">
+    <div className="space-y-7">
       {node}
       <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
         <div>
-          <h1 className="text-2xl font-extrabold tracking-tight text-ink sm:text-3xl">
+          <h1 className="text-2xl font-extrabold tracking-tight text-ink sm:text-[2rem]">
             {t("orders.title")}
           </h1>
-          <p className="mt-1 max-w-xl text-sm text-ink-muted">
+          <p className="mt-1.5 max-w-xl text-sm text-ink-muted">
             {t("orders.subtitle")}
           </p>
         </div>
-        <div className="flex items-center gap-2 rounded-2xl border border-royal-100 bg-white px-4 py-3 shadow-sm">
-          <span className="grid h-9 w-9 place-items-center rounded-xl bg-gold-50 text-gold-700">
+        <div className="flex items-center gap-3 rounded-2xl border border-royal-100 bg-white px-4 py-3.5 shadow-sm">
+          <span className="grid h-10 w-10 place-items-center rounded-xl bg-gold-50 text-gold-700">
             <ShoppingBag className="h-4 w-4" />
           </span>
           <div>
-            <p className="text-[10px] font-extrabold uppercase tracking-wide text-ink-muted">
+            <p className="text-[11px] font-extrabold uppercase tracking-wide text-ink-muted">
               {t("dashboard.ordersWeek")}
             </p>
             <p className="text-lg font-extrabold leading-tight text-ink">
@@ -114,7 +114,7 @@ export default function OrdersPage() {
         </div>
       </div>
 
-      <div className="card p-4 sm:p-5">
+      <div className="card p-5">
         <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
           <div className="no-scrollbar -mx-1 flex gap-1.5 overflow-x-auto px-1 pb-1">
             {FILTERS.map((item) => (
@@ -134,7 +134,7 @@ export default function OrdersPage() {
                   : t(`status.${item.value}`)}
                 <span
                   className={cn(
-                    "grid h-5 min-w-5 place-items-center rounded-full px-1 text-[10px]",
+                    "grid h-5 min-w-5 place-items-center rounded-full px-1 text-[11px]",
                     filter === item.value
                       ? "bg-white/20 text-white"
                       : "bg-white text-royal-800",
@@ -164,7 +164,7 @@ export default function OrdersPage() {
           hint={t("orders.emptyHint")}
         />
       ) : (
-        <div className="space-y-2.5">
+        <div className="space-y-3">
           {filtered.map((order) => (
             <OrderRow
               key={order.id}
@@ -211,7 +211,7 @@ export default function OrdersPage() {
 
             <div className="grid gap-3 sm:grid-cols-2">
               <div className="rounded-2xl border border-royal-100 bg-royal-50/40 p-4">
-                <p className="flex items-center gap-1.5 text-[10px] font-extrabold uppercase tracking-wide text-ink-muted">
+                <p className="flex items-center gap-1.5 text-[11px] font-extrabold uppercase tracking-wide text-ink-muted">
                   <User className="h-3 w-3" />
                   {t("common.customer")}
                 </p>
@@ -227,7 +227,7 @@ export default function OrdersPage() {
                 </a>
               </div>
               <div className="rounded-2xl border border-royal-100 bg-royal-50/40 p-4">
-                <p className="flex items-center gap-1.5 text-[10px] font-extrabold uppercase tracking-wide text-ink-muted">
+                <p className="flex items-center gap-1.5 text-[11px] font-extrabold uppercase tracking-wide text-ink-muted">
                   <MapPin className="h-3 w-3" />
                   {t("orders.deliveryAddress")}
                 </p>
@@ -239,10 +239,10 @@ export default function OrdersPage() {
 
             <div className="overflow-hidden rounded-2xl border border-royal-100">
               <div className="flex items-center justify-between bg-royal-50/60 px-4 py-2.5">
-                <p className="text-[10px] font-extrabold uppercase tracking-wide text-ink-muted">
+                <p className="text-[11px] font-extrabold uppercase tracking-wide text-ink-muted">
                   {t("orders.order")} · {t("orders.items")}
                 </p>
-                <p className="text-[10px] font-extrabold uppercase tracking-wide text-ink-muted">
+                <p className="text-[11px] font-extrabold uppercase tracking-wide text-ink-muted">
                   {t("common.total")}
                 </p>
               </div>
@@ -284,7 +284,7 @@ export default function OrdersPage() {
 
             {selected.note && (
               <div className="rounded-2xl border border-gold-200 bg-gold-50/60 p-4">
-                <p className="text-[10px] font-extrabold uppercase tracking-wide text-gold-800">
+                <p className="text-[11px] font-extrabold uppercase tracking-wide text-gold-800">
                   {t("orders.note")}
                 </p>
                 <p className="mt-1 text-xs font-semibold text-ink">
@@ -294,7 +294,7 @@ export default function OrdersPage() {
             )}
 
             <div className="rounded-2xl border border-royal-100 p-4">
-              <p className="text-[10px] font-extrabold uppercase tracking-wide text-ink-muted">
+              <p className="text-[11px] font-extrabold uppercase tracking-wide text-ink-muted">
                 {t("orders.paymentMethod")}
               </p>
               <p className="mt-1 text-sm font-bold text-ink">
@@ -386,7 +386,7 @@ function OrderRow({
 }) {
   const qty = order.items.reduce((sum, item) => sum + item.qty, 0);
   return (
-    <div className="card p-4 transition hover:border-royal-200 hover:shadow-glow/10 sm:p-5">
+    <div className="card p-5 transition hover:border-royal-200 hover:shadow-glow/10 sm:p-6">
       <div className="flex flex-col gap-3 lg:flex-row lg:items-center">
         <button
           type="button"
@@ -405,7 +405,7 @@ function OrderRow({
               <p className="truncate text-sm font-extrabold text-ink">
                 {order.customerName}
               </p>
-              <span className="rounded-full bg-royal-50 px-2 py-0.5 text-[10px] font-extrabold text-royal-700">
+              <span className="rounded-full bg-royal-50 px-2 py-0.5 text-[11px] font-extrabold text-royal-700">
                 #{order.orderNumber}
               </span>
             </div>

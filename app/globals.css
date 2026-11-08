@@ -344,7 +344,7 @@ select.input optgroup {
    mobile header, bottom nav and dashboard dialogs switch to light.
    ------------------------------------------------------------------------- */
 .dashboard-root {
-  background-color: #faf7ff !important;
+  background-color: #f7f5fa !important;
 }
 
 :is(.dashboard-light, body.dashboard-mode .dashboard-portal) {
@@ -400,7 +400,7 @@ select.input optgroup {
 }
 
 :is(.dashboard-light, body.dashboard-mode .dashboard-portal) .text-ink-muted {
-  color: #7c6b9b;
+  color: #6d6086;
 }
 
 :is(.dashboard-light, body.dashboard-mode .dashboard-portal) .text-royal-600,
@@ -414,27 +414,44 @@ select.input optgroup {
 :is(.dashboard-light, body.dashboard-mode .dashboard-portal) .border-royal-100\/60,
 :is(.dashboard-light, body.dashboard-mode .dashboard-portal) .border-royal-100\/70,
 :is(.dashboard-light, body.dashboard-mode .dashboard-portal) .border-royal-100\/80 {
-  border-color: #ece2ff;
+  border-color: #e8e1f1;
 }
 
 :is(.dashboard-light, body.dashboard-mode .dashboard-portal) .border-royal-200 {
-  border-color: #ddccfa;
+  border-color: #d9cdea;
 }
 
 :is(.dashboard-light, body.dashboard-mode .dashboard-portal) .border-royal-300 {
-  border-color: #cbb4f2;
+  border-color: #c9b6ea;
+}
+
+:is(.dashboard-light, body.dashboard-mode .dashboard-portal) .divide-royal-100\/60
+  > :not([hidden])
+  ~ :not([hidden]) {
+  border-color: #efeaf6;
+}
+
+:is(.dashboard-light, body.dashboard-mode .dashboard-portal) .hover\:border-royal-200:hover {
+  border-color: #d9cdea;
+}
+
+:is(.dashboard-light, body.dashboard-mode .dashboard-portal) .hover\:border-royal-300:hover {
+  border-color: #c9b6ea;
 }
 
 :is(.dashboard-light, body.dashboard-mode .dashboard-portal) .card {
   background-color: #ffffff;
-  border-color: #ece2ff;
-  box-shadow: 0 20px 45px -32px rgba(43, 16, 88, 0.35);
+  border-color: #e8e1f1;
+  box-shadow:
+    0 1px 2px rgba(23, 10, 48, 0.04),
+    0 18px 40px -34px rgba(23, 10, 48, 0.4);
 }
 
 :is(.dashboard-light, body.dashboard-mode .dashboard-portal) .input {
   background-color: #ffffff;
-  border-color: #e4d8f7;
+  border-color: #e6def2;
   color: #1b1230;
+  box-shadow: 0 1px 2px rgba(23, 10, 48, 0.03);
 }
 
 :is(.dashboard-light, body.dashboard-mode .dashboard-portal) .input::placeholder {
@@ -449,8 +466,9 @@ select.input optgroup {
 
 :is(.dashboard-light, body.dashboard-mode .dashboard-portal) .btn-ghost {
   background-color: #ffffff;
-  border-color: #e4d8f7;
+  border-color: #e2d9f0;
   color: #4a0da1;
+  box-shadow: 0 1px 2px rgba(23, 10, 48, 0.04);
 }
 
 :is(.dashboard-light, body.dashboard-mode .dashboard-portal) .btn-ghost:hover {

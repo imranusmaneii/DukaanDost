@@ -84,18 +84,18 @@ export default function AdminPage() {
   if (!hydrated) return null;
 
   return (
-    <div className="space-y-5">
+    <div className="space-y-7">
       {node}
       <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
         <div>
-          <p className="text-[11px] font-extrabold uppercase tracking-[0.18em] text-royal-600">
+          <p className="text-xs font-extrabold uppercase tracking-[0.16em] text-royal-600">
             Shop owner only
           </p>
-          <h1 className="mt-1 flex items-center gap-2 text-2xl font-extrabold tracking-tight text-ink sm:text-3xl">
+          <h1 className="mt-2 flex items-center gap-2 text-2xl font-extrabold tracking-tight text-ink sm:text-[2rem]">
             <ShieldCheck className="h-6 w-6 text-royal-700" />
             Admin
           </h1>
-          <p className="mt-1 max-w-xl text-sm text-ink-muted">
+          <p className="mt-1.5 max-w-xl text-sm text-ink-muted">
             Your payment accounts and store controls. Customers see these
             details at checkout.
           </p>
@@ -117,23 +117,23 @@ export default function AdminPage() {
         </p>
       )}
 
-      <div className="grid gap-4 lg:grid-cols-3">
+      <div className="grid gap-5 lg:grid-cols-3 lg:gap-6">
         <div className="card p-5 sm:p-6 lg:col-span-2">
-          <div className="flex items-center gap-2">
-            <span className="grid h-8 w-8 place-items-center rounded-xl bg-royal-50 text-royal-700">
+          <div className="flex items-center gap-3">
+            <span className="grid h-9 w-9 place-items-center rounded-xl bg-royal-50 text-royal-700">
               <CreditCard className="h-4 w-4" />
             </span>
             <div>
-              <h2 className="text-sm font-extrabold text-ink">
+              <h2 className="text-[15px] font-extrabold tracking-tight text-ink">
                 Payment accounts
               </h2>
-              <p className="text-xs text-ink-muted">
+              <p className="mt-0.5 text-xs text-ink-muted">
                 Turn on the methods you accept and enter your own details.
               </p>
             </div>
           </div>
 
-          <div className="mt-4 grid gap-2.5 sm:grid-cols-2">
+          <div className="mt-6 grid gap-3 sm:grid-cols-2">
             {METHODS.map(({ id, icon: Icon }) => {
               const active = methods.includes(id);
               return (
@@ -142,7 +142,7 @@ export default function AdminPage() {
                   type="button"
                   onClick={() => toggleMethod(id)}
                   className={cn(
-                    "flex items-center gap-2.5 rounded-2xl border px-3.5 py-3 text-left transition rtl:text-right",
+                    "flex items-center gap-3 rounded-2xl border px-4 py-3.5 text-left transition rtl:text-right",
                     active
                       ? "border-royal-400 bg-royal-50"
                       : "border-royal-100 hover:bg-royal-50/50",
@@ -178,7 +178,7 @@ export default function AdminPage() {
             })}
           </div>
 
-          <div className="mt-4 grid gap-3 sm:grid-cols-3">
+          <div className="mt-6 grid gap-3 sm:grid-cols-3">
             {methods.includes("easypaisa") && (
               <div>
                 <label className="label" htmlFor="admin-easypaisa">
@@ -241,7 +241,7 @@ export default function AdminPage() {
             )}
           </div>
 
-          <div className="mt-5 flex justify-end">
+          <div className="mt-6 flex justify-end">
             <button
               type="button"
               onClick={() => void save()}
@@ -254,18 +254,20 @@ export default function AdminPage() {
           </div>
         </div>
 
-        <div className="space-y-4">
-          <div className="card p-5">
-            <div className="flex items-center gap-2">
-              <span className="grid h-8 w-8 place-items-center rounded-xl bg-emerald-50 text-emerald-700">
+        <div className="space-y-5">
+          <div className="card p-5 sm:p-6">
+            <div className="flex items-center gap-3">
+              <span className="grid h-9 w-9 place-items-center rounded-xl bg-emerald-50 text-emerald-700">
                 <Store className="h-4 w-4" />
               </span>
-              <h2 className="text-sm font-extrabold text-ink">Store controls</h2>
+              <h2 className="text-[15px] font-extrabold tracking-tight text-ink">
+                Store controls
+              </h2>
             </div>
             <button
               type="button"
               onClick={() => setIsOpen((prev) => !prev)}
-              className="mt-4 flex w-full items-center justify-between rounded-2xl bg-royal-50/60 px-4 py-3"
+              className="mt-5 flex w-full items-center justify-between rounded-2xl bg-royal-50/60 px-4 py-3.5"
             >
               <span className="text-left">
                 <span className="block text-xs font-extrabold text-ink">
@@ -292,7 +294,7 @@ export default function AdminPage() {
               </span>
             </button>
 
-            <label className="label mt-4" htmlFor="admin-delivery">
+            <label className="label mt-5" htmlFor="admin-delivery">
               Delivery note
             </label>
             <textarea
@@ -314,14 +316,16 @@ export default function AdminPage() {
             </button>
           </div>
 
-          <div className="card p-5">
-            <div className="flex items-center gap-2">
-              <span className="grid h-8 w-8 place-items-center rounded-xl bg-royal-50 text-royal-700">
+          <div className="card p-5 sm:p-6">
+            <div className="flex items-center gap-3">
+              <span className="grid h-9 w-9 place-items-center rounded-xl bg-royal-50 text-royal-700">
                 <Link2 className="h-4 w-4" />
               </span>
-              <h2 className="text-sm font-extrabold text-ink">Account</h2>
+              <h2 className="text-[15px] font-extrabold tracking-tight text-ink">
+                Account
+              </h2>
             </div>
-            <div className="mt-3 space-y-2 text-xs">
+            <div className="mt-4 space-y-2.5 text-xs">
               <div className="flex items-center justify-between gap-3">
                 <span className="font-semibold text-ink-muted">Owner</span>
                 <span className="truncate font-extrabold text-ink">

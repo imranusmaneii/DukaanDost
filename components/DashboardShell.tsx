@@ -210,8 +210,8 @@ export function DashboardShell({ children }: { children: ReactNode }) {
         </div>
       </header>
 
-      <main className="dashboard-light pb-24 lg:pb-10 lg:ps-72">
-        <div className="mx-auto max-w-6xl px-4 py-6 sm:px-6 lg:px-8 lg:py-9">
+      <main className="dashboard-light pb-24 lg:pb-12 lg:ps-72">
+        <div className="mx-auto max-w-6xl px-4 py-7 sm:px-6 lg:px-8 lg:py-10">
           {children}
         </div>
       </main>

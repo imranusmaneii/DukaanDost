@@ -159,14 +159,14 @@ export default function ProductsPage() {
   const inStockCount = products.filter((product) => product.inStock).length;
 
   return (
-    <div className="space-y-5">
+    <div className="space-y-7">
       {node}
       <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
         <div>
-          <h1 className="text-2xl font-extrabold tracking-tight text-ink sm:text-3xl">
+          <h1 className="text-2xl font-extrabold tracking-tight text-ink sm:text-[2rem]">
             {t("products.title")}
           </h1>
-          <p className="mt-1 max-w-xl text-sm text-ink-muted">
+          <p className="mt-1.5 max-w-xl text-sm text-ink-muted">
             {t("products.subtitle")}
           </p>
         </div>
@@ -176,42 +176,42 @@ export default function ProductsPage() {
         </button>
       </div>
 
-      <div className="grid grid-cols-3 gap-3">
-        <div className="card flex items-center gap-3 p-4">
-          <span className="grid h-9 w-9 place-items-center rounded-xl bg-royal-50 text-royal-700">
+      <div className="grid gap-4 sm:grid-cols-3">
+        <div className="card flex items-center gap-4 p-5">
+          <span className="grid h-10 w-10 place-items-center rounded-xl bg-royal-50 text-royal-700">
             <Package className="h-4 w-4" />
           </span>
           <div>
-            <p className="text-lg font-extrabold leading-tight text-ink">
+            <p className="text-xl font-extrabold leading-tight text-ink">
               {products.length}
             </p>
-            <p className="text-[10px] font-bold uppercase tracking-wide text-ink-muted">
+            <p className="text-[11px] font-bold uppercase tracking-wide text-ink-muted">
               {t("products.items")}
             </p>
           </div>
         </div>
-        <div className="card flex items-center gap-3 p-4">
-          <span className="grid h-9 w-9 place-items-center rounded-xl bg-emerald-50 text-emerald-700">
+        <div className="card flex items-center gap-4 p-5">
+          <span className="grid h-10 w-10 place-items-center rounded-xl bg-emerald-50 text-emerald-700">
             <Check className="h-4 w-4" />
           </span>
           <div>
-            <p className="text-lg font-extrabold leading-tight text-ink">
+            <p className="text-xl font-extrabold leading-tight text-ink">
               {inStockCount}
             </p>
-            <p className="text-[10px] font-bold uppercase tracking-wide text-ink-muted">
+            <p className="text-[11px] font-bold uppercase tracking-wide text-ink-muted">
               {t("products.inStock")}
             </p>
           </div>
         </div>
-        <div className="card flex items-center gap-3 p-4">
-          <span className="grid h-9 w-9 place-items-center rounded-xl bg-rose-50 text-rose-700">
+        <div className="card flex items-center gap-4 p-5">
+          <span className="grid h-10 w-10 place-items-center rounded-xl bg-rose-50 text-rose-700">
             <X className="h-4 w-4" />
           </span>
           <div>
-            <p className="text-lg font-extrabold leading-tight text-ink">
+            <p className="text-xl font-extrabold leading-tight text-ink">
               {products.length - inStockCount}
             </p>
-            <p className="text-[10px] font-bold uppercase tracking-wide text-ink-muted">
+            <p className="text-[11px] font-bold uppercase tracking-wide text-ink-muted">
               {t("products.outOfStock")}
             </p>
           </div>
@@ -224,7 +224,7 @@ export default function ProductsPage() {
           value={query}
           onChange={(event) => setQuery(event.target.value)}
           placeholder={t("store.searchProducts")}
-          className="input pl-10 rtl:pl-4 rtl:pr-10"
+          className="input bg-white pl-10 shadow-sm rtl:pl-4 rtl:pr-10"
         />
       </div>
 
@@ -241,7 +241,7 @@ export default function ProductsPage() {
           }
         />
       ) : (
-        <div className="grid gap-3.5 sm:grid-cols-2 lg:grid-cols-3">
+        <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
           {filtered.map((product) => (
             <div
               key={product.id}
@@ -249,7 +249,7 @@ export default function ProductsPage() {
             >
               <div
                 className={cn(
-                  "relative grid h-36 place-items-center",
+                  "relative grid h-40 place-items-center",
                   PRODUCT_THEMES[product.theme]?.tile ??
                     PRODUCT_THEMES.royal.tile,
                 )}
@@ -266,13 +266,13 @@ export default function ProductsPage() {
                   </span>
                 )}
                 {(product.imageUrls?.length ?? 0) > 1 && (
-                  <span className="absolute bottom-3 left-3 rounded-full bg-ink/60 px-2 py-0.5 text-[10px] font-extrabold text-white backdrop-blur">
+                  <span className="absolute bottom-3 left-3 rounded-full bg-ink/60 px-2 py-0.5 text-[11px] font-extrabold text-white backdrop-blur">
                     {product.imageUrls?.length} photos
                   </span>
                 )}
                 <span
                   className={cn(
-                    "absolute left-3 top-3 rounded-full px-2.5 py-1 text-[10px] font-extrabold",
+                    "absolute left-3 top-3 rounded-full px-2.5 py-1 text-[11px] font-extrabold",
                     product.inStock
                       ? "bg-white/90 text-emerald-700"
                       : "bg-rose-600 text-white",
@@ -301,13 +301,13 @@ export default function ProductsPage() {
                   </button>
                 </div>
               </div>
-              <div className="p-4">
-                <div className="flex items-start justify-between gap-2">
+              <div className="p-5">
+                <div className="flex items-start justify-between gap-3">
                   <div className="min-w-0">
-                    <h3 className="truncate text-sm font-extrabold text-ink">
+                    <h3 className="truncate text-[15px] font-extrabold tracking-tight text-ink">
                       {product.name}
                     </h3>
-                    <p className="mt-0.5 line-clamp-2 min-h-[2rem] text-xs text-ink-muted">
+                    <p className="mt-1 line-clamp-2 min-h-[2rem] text-xs leading-relaxed text-ink-muted">
                       {product.description || "—"}
                     </p>
                   </div>
@@ -315,8 +315,8 @@ export default function ProductsPage() {
                     <span dir="ltr">{formatMoney(product.price)}</span>
                   </p>
                 </div>
-                <div className="mt-3 flex items-center justify-between border-t border-royal-100/70 pt-3">
-                  <span className="text-[11px] font-semibold text-ink-muted">
+                <div className="mt-4 flex items-center justify-between border-t border-royal-100/70 pt-4">
+                  <span className="text-xs font-semibold text-ink-muted">
                     {product.stock >= UNLIMITED_STOCK
                       ? t("products.inStock")
                       : `${product.stock} ${t("products.stockCount")}`}
@@ -329,7 +329,7 @@ export default function ProductsPage() {
                       })
                     }
                     className={cn(
-                      "flex items-center gap-1.5 rounded-full px-2.5 py-1 text-[10px] font-extrabold transition",
+                      "flex items-center gap-1.5 rounded-full px-2.5 py-1 text-[11px] font-extrabold transition",
                       product.inStock
                         ? "bg-emerald-50 text-emerald-700 hover:bg-emerald-100"
                         : "bg-royal-50 text-royal-700 hover:bg-royal-100",

@@ -69,14 +69,14 @@ export default function SettingsPage() {
   if (!hydrated) return null;
 
   return (
-    <div className="space-y-5">
+    <div className="space-y-7">
       {node}
       <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
         <div>
-          <h1 className="text-2xl font-extrabold tracking-tight text-ink sm:text-3xl">
+          <h1 className="text-2xl font-extrabold tracking-tight text-ink sm:text-[2rem]">
             {t("settings.title")}
           </h1>
-          <p className="mt-1 max-w-xl text-sm text-ink-muted">
+          <p className="mt-1.5 max-w-xl text-sm text-ink-muted">
             {t("settings.subtitle")}
           </p>
         </div>
@@ -97,18 +97,18 @@ export default function SettingsPage() {
         </p>
       )}
 
-      <div className="grid gap-4 lg:grid-cols-3">
+      <div className="grid gap-5 lg:grid-cols-3 lg:gap-6">
         <div className="card p-5 sm:p-6 lg:col-span-2">
-          <div className="flex items-center gap-2">
-            <span className="grid h-8 w-8 place-items-center rounded-xl bg-royal-50 text-royal-700">
+          <div className="flex items-center gap-3">
+            <span className="grid h-9 w-9 place-items-center rounded-xl bg-royal-50 text-royal-700">
               <Store className="h-4 w-4" />
             </span>
-            <h2 className="text-sm font-extrabold text-ink">
+            <h2 className="text-[15px] font-extrabold tracking-tight text-ink">
               {t("settings.shopInfo")}
             </h2>
           </div>
 
-          <div className="mt-5">
+          <div className="mt-6">
             <ImageUpload
               value={draft.logoUrl}
               onChange={(url) => setDraft((prev) => ({ ...prev, logoUrl: url }))}
@@ -119,7 +119,7 @@ export default function SettingsPage() {
             />
           </div>
 
-          <div className="mt-5 grid gap-4 sm:grid-cols-2">
+          <div className="mt-6 grid gap-4 sm:grid-cols-2">
             <div>
               <label className="label" htmlFor="shop-name">
                 {t("settings.shopName")}
@@ -220,7 +220,7 @@ export default function SettingsPage() {
             </div>
           </div>
 
-          <div className="mt-5 border-t border-royal-100 pt-5">
+          <div className="mt-6 border-t border-royal-100 pt-6">
             <p className="label">{t("products.emoji")}</p>
             <div className="flex flex-wrap gap-1.5">
               {EMOJI_CHOICES.map((emoji) => (
@@ -268,7 +268,7 @@ export default function SettingsPage() {
           </div>
         </div>
 
-        <div className="space-y-4">
+        <div className="space-y-5">
           <div className="card overflow-hidden">
             <div className="relative bg-royal-radial p-5 text-white">
               <div className="pointer-events-none absolute -right-8 -top-10 h-32 w-32 rounded-full bg-gold-300/20 blur-xl" />
@@ -292,7 +292,7 @@ export default function SettingsPage() {
                 {draft.tagline || t("settings.tagline")}
               </p>
             </div>
-            <div className="space-y-2 p-4">
+            <div className="space-y-2.5 p-5">
               <div className="flex items-center justify-between text-xs">
                 <span className="font-semibold text-ink-muted">
                   {t("products.items")}
@@ -320,19 +320,19 @@ export default function SettingsPage() {
             </div>
           </div>
 
-          <div className="card p-5">
-            <div className="flex items-center gap-2">
-              <span className="grid h-8 w-8 place-items-center rounded-xl bg-gold-50 text-gold-700">
+          <div className="card p-5 sm:p-6">
+            <div className="flex items-center gap-3">
+              <span className="grid h-9 w-9 place-items-center rounded-xl bg-gold-50 text-gold-700">
                 <Languages className="h-4 w-4" />
               </span>
-              <h2 className="text-sm font-extrabold text-ink">
+              <h2 className="text-[15px] font-extrabold tracking-tight text-ink">
                 {t("settings.language")}
               </h2>
             </div>
-            <p className="mt-1 text-xs text-ink-muted">
+            <p className="mt-2 text-xs leading-relaxed text-ink-muted">
               {t("settings.languageHint")}
             </p>
-            <div className="mt-3 grid grid-cols-2 gap-2">
+            <div className="mt-4 grid grid-cols-2 gap-2.5">
               {(["en", "ur"] as Lang[]).map((value) => (
                 <button
                   key={value}
@@ -355,22 +355,22 @@ export default function SettingsPage() {
             </div>
           </div>
 
-          <div className="card p-5">
-            <div className="flex items-center gap-2">
-              <span className="grid h-8 w-8 place-items-center rounded-xl bg-royal-50 text-royal-700">
+          <div className="card p-5 sm:p-6">
+            <div className="flex items-center gap-3">
+              <span className="grid h-9 w-9 place-items-center rounded-xl bg-royal-50 text-royal-700">
                 <ShieldCheck className="h-4 w-4" />
               </span>
-              <h2 className="text-sm font-extrabold text-ink">
+              <h2 className="text-[15px] font-extrabold tracking-tight text-ink">
                 Payments & admin
               </h2>
             </div>
-            <p className="mt-1 text-xs text-ink-muted">
+            <p className="mt-2 text-xs leading-relaxed text-ink-muted">
               Set your own Easypaisa, JazzCash or bank details and pause orders
               from the Admin page.
             </p>
             <Link
               href="/dashboard/admin"
-              className="btn-soft mt-3 w-full px-3 py-2.5 text-xs"
+              className="btn-soft mt-4 w-full px-3 py-2.5 text-xs"
             >
               <Wallet className="h-4 w-4" />
               Open Admin

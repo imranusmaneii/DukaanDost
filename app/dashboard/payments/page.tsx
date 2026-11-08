@@ -43,18 +43,18 @@ export default function PaymentsPage() {
   if (!hydrated) return null;
 
   return (
-    <div className="space-y-5">
+    <div className="space-y-7">
       {node}
       <div>
-        <h1 className="text-2xl font-extrabold tracking-tight text-ink sm:text-3xl">
+        <h1 className="text-2xl font-extrabold tracking-tight text-ink sm:text-[2rem]">
           {t("payments.title")}
         </h1>
-        <p className="mt-1 max-w-xl text-sm text-ink-muted">
+        <p className="mt-1.5 max-w-xl text-sm text-ink-muted">
           {t("payments.subtitle")}
         </p>
       </div>
 
-      <div className="relative overflow-hidden rounded-3xl bg-royal-radial p-5 text-white shadow-glow sm:p-6">
+      <div className="relative overflow-hidden rounded-3xl bg-royal-radial p-6 text-white shadow-glow sm:p-7">
         <div className="pointer-events-none absolute -right-12 -top-16 h-52 w-52 rounded-full bg-gold-300/20 blur-2xl" />
         <div className="relative flex flex-col gap-5 sm:flex-row sm:items-center sm:justify-between">
           <div className="flex items-center gap-4">
@@ -96,9 +96,9 @@ export default function PaymentsPage() {
           hint={t("payments.emptyHint")}
         />
       ) : (
-        <div className="space-y-2.5">
+        <div className="space-y-3">
           {pending.map((order) => (
-            <div key={order.id} className="card p-4 sm:p-5">
+            <div key={order.id} className="card p-5 sm:p-6">
               <div className="flex flex-col gap-4 lg:flex-row lg:items-center">
                 <div className="flex min-w-0 flex-1 items-start gap-3">
                   <span className="grid h-11 w-11 shrink-0 place-items-center rounded-2xl bg-gold-50 text-sm font-extrabold text-gold-800">
@@ -113,7 +113,7 @@ export default function PaymentsPage() {
                       <p className="truncate text-sm font-extrabold text-ink">
                         {order.customerName}
                       </p>
-                      <span className="rounded-full bg-royal-50 px-2 py-0.5 text-[10px] font-extrabold text-royal-700">
+                      <span className="rounded-full bg-royal-50 px-2 py-0.5 text-[11px] font-extrabold text-royal-700">
                         #{order.orderNumber}
                       </span>
                       <PaymentPill method={order.paymentMethod} lang={lang} />
@@ -143,7 +143,7 @@ export default function PaymentsPage() {
                   </div>
                 </div>
 
-                <div className="flex flex-wrap items-center gap-2 border-t border-royal-100/70 pt-3 lg:border-t-0 lg:pt-0">
+                <div className="flex flex-wrap items-center gap-2 border-t border-royal-100/70 pt-4 lg:border-t-0 lg:pt-0">
                   <p className="mr-auto text-lg font-extrabold text-ink lg:mr-3 rtl:ml-3 rtl:mr-0">
                     <span dir="ltr">{formatMoney(order.total)}</span>
                   </p>
