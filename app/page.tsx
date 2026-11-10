@@ -44,6 +44,10 @@ const NAV = [
 ];
 
 export default function LandingPage() {
+  const heroProducts = seedProducts.slice(0, 3);
+  const heroCartCount = heroProducts.length;
+  const heroCartTotal = heroProducts.reduce((sum, product) => sum + product.price, 0);
+
   return (
     <div className="min-h-screen overflow-x-clip bg-[#faf7ff]">
       <header className="sticky top-0 z-50 border-b border-royal-100/60 bg-white/80 backdrop-blur-xl">
@@ -233,7 +237,7 @@ export default function LandingPage() {
                   </div>
                 </div>
                 <div className="space-y-2 p-3">
-                  {seedProducts.slice(0, 3).map((product) => (
+                  {heroProducts.map((product) => (
                     <div
                       key={product.id}
                       className="flex items-center gap-2 rounded-xl border border-royal-100 bg-white p-1.5"
@@ -261,10 +265,10 @@ export default function LandingPage() {
                   <div className="flex items-center justify-between rounded-xl bg-royal-800 px-2.5 py-2 text-white">
                     <span className="flex items-center gap-1 text-[8px] font-bold">
                       <ShoppingCart className="h-2.5 w-2.5 text-gold-300" />
-                      2 items
+                      {heroCartCount} items
                     </span>
                     <span className="text-[8px] font-bold">
-                      Rs 3,700 · View cart
+                      {formatMoney(heroCartTotal)} · View cart
                     </span>
                   </div>
                   <p className="pt-1 text-center text-[7px] font-semibold text-ink-muted">
